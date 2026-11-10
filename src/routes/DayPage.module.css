@@ -1,0 +1,20 @@
+/*
+ * Page-level layout for the day briefing, in plain CSS. Colors and spacing come from the
+ * MUI theme through its CSS variables, so this file never repeats a theme value.
+ */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--mui-spacing));
+  margin-block-end: calc(3 * var(--mui-spacing));
+}
+
+/* 900px is the MUI "md" breakpoint; media queries cannot read CSS variables. */
+@media (min-width: 900px) {
+  .header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

@@ -1,5 +1,6 @@
 import Typography from '@mui/material/Typography';
 import { useParams } from 'react-router';
+import { DateNav } from '../components/DateNav';
 import { PageTitle } from '../components/PageTitle';
 import {
   formatLongDate,
@@ -8,6 +9,7 @@ import {
   type IsoDate,
   parseIsoDate,
 } from '../lib/date';
+import styles from './DayPage.module.css';
 import { RedirectToToday } from './RedirectToToday';
 
 /**
@@ -31,9 +33,12 @@ function DayBriefing({ date }: { date: IsoDate }) {
   return (
     <>
       <PageTitle>{title}</PageTitle>
-      <Typography variant="h4" component="h1">
-        {title}
-      </Typography>
+      <header className={styles.header}>
+        <Typography variant="h4" component="h1">
+          {title}
+        </Typography>
+        <DateNav date={date} />
+      </header>
     </>
   );
 }
