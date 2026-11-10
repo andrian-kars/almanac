@@ -1,12 +1,31 @@
 import Typography from '@mui/material/Typography';
 import { useParams } from 'react-router';
 import { PageTitle } from '../components/PageTitle';
-import { formatLongDate, todayIso } from '../lib/date';
+import {
+  formatLongDate,
+  getAllowedRange,
+  isInRange,
+  type IsoDate,
+  parseIsoDate,
+} from '../lib/date';
+import { RedirectToToday } from './RedirectToToday';
 
-/** The briefing for one date, taken from the `/day/:date` URL. */
+/**
+ * Reads `/day/:date`. An invalid or out-of-range date redirects to today, replacing the
+ * bad URL in history so the back button doesn't return to it.
+ */
 export function DayPage() {
-  // TODO(feature 2): parse and validate instead of trusting the URL.
-  const { date = todayIso() } = useParams<'date'>();
+  const { date: param = '' } = useParams<'date'>();
+  const date = parseIsoDate(param);
+
+  if (!date || !isInRange(date, getAllowedRange())) {
+    return <RedirectToToday />;
+  }
+
+  return <DayBriefing date={date} />;
+}
+
+function DayBriefing({ date }: { date: IsoDate }) {
   const title = formatLongDate(date);
 
   return (

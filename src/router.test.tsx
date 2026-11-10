@@ -29,6 +29,35 @@ describe('routing', () => {
     expect(await findPageHeading('Bookmarks')).toBeVisible();
   });
 
+  it.each([
+    ['not a date', 'banana'],
+    ['an impossible date', '2024-02-30'],
+    ['a date before the weather archive starts', '1939-12-31'],
+    ['a date past the forecast horizon', '2026-11-25'],
+  ])('redirects %s to today', async (_label, date) => {
+    const { router } = renderApp(`/day/${date}`);
+
+    expect(await findPageHeading('November 10, 2026')).toBeVisible();
+    expect(router.state.location.pathname).toBe('/day/2026-11-10');
+  });
+
+  it.each([
+    ['the first allowed date', '1940-01-01', 'January 1, 1940'],
+    ['the last allowed date', '2026-11-24', 'November 24, 2026'],
+  ])('accepts %s', async (_label, date, heading) => {
+    const { router } = renderApp(`/day/${date}`);
+
+    expect(await findPageHeading(heading)).toBeVisible();
+    expect(router.state.location.pathname).toBe(`/day/${date}`);
+  });
+
+  it('replaces an invalid URL in history instead of adding an entry', async () => {
+    const { router } = renderApp('/day/banana');
+
+    await findPageHeading('November 10, 2026');
+    expect(router.state.historyAction).toBe('REPLACE');
+  });
+
   it('redirects unknown paths to today', async () => {
     const { router } = renderApp('/no/such/page');
 

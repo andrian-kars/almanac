@@ -1,6 +1,12 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, vi } from 'vitest';
+
+beforeEach(() => {
+  // Pin the browser language so locale-aware formatting gives the same result on every
+  // machine (Node's own default follows the OS, e.g. uk-UA).
+  vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
+});
 
 afterEach(() => {
   // Vitest globals are off, so React Testing Library cannot register its own cleanup.
