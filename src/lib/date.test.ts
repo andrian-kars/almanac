@@ -7,6 +7,7 @@ import {
   getAdjacentDays,
   getAllowedRange,
   getDisplayLocale,
+  getMonthDay,
   isInRange,
   type IsoDate,
   MIN_DATE,
@@ -123,6 +124,16 @@ describe('getAdjacentDays', () => {
 
   it('has no next day on the last allowed date', () => {
     expect(getAdjacentDays(iso('2026-11-24'), range).next).toBeNull();
+  });
+});
+
+describe('getMonthDay', () => {
+  it.each([
+    ['2024-05-01', { month: '05', day: '01' }],
+    ['1999-12-31', { month: '12', day: '31' }],
+    ['2024-02-29', { month: '02', day: '29' }],
+  ])('%s → %o', (date, expected) => {
+    expect(getMonthDay(iso(date))).toEqual(expected);
   });
 });
 

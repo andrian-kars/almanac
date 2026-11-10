@@ -6,6 +6,12 @@ beforeEach(() => {
   // Pin the browser language so locale-aware formatting gives the same result on every
   // machine (Node's own default follows the OS, e.g. uk-UA).
   vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
+  // No test may reach the real network. Requests stay pending unless a test mocks them
+  // with mockFetch().
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>(() => new Promise<Response>(() => {})),
+  );
 });
 
 afterEach(() => {

@@ -1,0 +1,76 @@
+/*
+ * The entry list in plain CSS. Colors, spacing and radius come from the MUI theme's CSS
+ * variables, so this stays in step with the theme (including dark mode later).
+ */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  gap: calc(1.5 * var(--mui-spacing));
+  align-items: start;
+  padding-block: calc(1.5 * var(--mui-spacing));
+  border-block-end: 1px solid var(--mui-palette-divider);
+}
+
+.entry:last-child {
+  border-block-end: none;
+}
+
+.year {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--mui-palette-primary-main);
+}
+
+.body {
+  min-width: 0; /* lets long words wrap instead of widening the grid */
+  overflow-wrap: anywhere;
+}
+
+.text {
+  margin: 0;
+}
+
+.link {
+  display: inline-block;
+  margin-block-start: calc(0.5 * var(--mui-spacing));
+  font-size: 0.875rem;
+  color: var(--mui-palette-primary-main);
+}
+
+.thumbnail {
+  width: 3.5rem;
+  height: 3.5rem;
+  object-fit: cover;
+  border-radius: var(--mui-shape-borderRadius);
+  background-color: var(--mui-palette-action-hover);
+}
+
+.count {
+  margin-inline-start: calc(0.75 * var(--mui-spacing));
+  color: var(--mui-palette-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  padding-block-start: var(--mui-spacing);
+}
+
+/* On narrow phones the year sits above the text, giving the text the full width. */
+@media (max-width: 599.95px) {
+  .entry {
+    grid-template-columns: 1fr auto;
+  }
+
+  .year {
+    grid-column: 1 / -1;
+  }
+}

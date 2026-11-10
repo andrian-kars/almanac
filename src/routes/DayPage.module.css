@@ -10,6 +10,11 @@
   margin-block-end: calc(3 * var(--mui-spacing));
 }
 
+.sections {
+  display: grid;
+  gap: calc(2 * var(--mui-spacing));
+}
+
 /* 900px is the MUI "md" breakpoint; media queries cannot read CSS variables. */
 @media (min-width: 900px) {
   .header {

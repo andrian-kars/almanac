@@ -85,6 +85,11 @@ export function getAdjacentDays(
   };
 }
 
+/** Month and day as two-digit strings, for "on this day" style APIs. */
+export function getMonthDay(date: IsoDate): { month: string; day: string } {
+  return { month: date.slice(5, 7), day: date.slice(8, 10) };
+}
+
 /**
  * The locale dates are actually formatted in: the browser language if Intl supports it,
  * otherwise whatever Intl falls back to. Used for the `lang` attribute of formatted dates,

@@ -2,6 +2,7 @@ import Typography from '@mui/material/Typography';
 import { useParams } from 'react-router';
 import { DateNav } from '../components/DateNav';
 import { PageTitle } from '../components/PageTitle';
+import { OnThisDayCard } from '../features/onThisDay/OnThisDayCard';
 import {
   formatLongDate,
   getAllowedRange,
@@ -42,6 +43,9 @@ function DayBriefing({ date }: { date: IsoDate }) {
         </Typography>
         <DateNav date={date} />
       </header>
+      <div className={styles.sections}>
+        <OnThisDayCard date={date} />
+      </div>
     </>
   );
 }
