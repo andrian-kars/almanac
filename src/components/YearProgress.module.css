@@ -1,0 +1,34 @@
+/* How far through its year a date falls: a ruler with a tick per month, filled up to the day. */
+
+.track {
+  position: relative;
+  height: 0.5rem;
+  border-inline: 1px solid var(--mui-palette-text-primary);
+  /* Twelve equal divisions. Months differ in length, so these are a guide, not a scale. */
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(100% / 12 - 1px),
+    var(--mui-palette-divider) calc(100% / 12 - 1px),
+    var(--mui-palette-divider) calc(100% / 12)
+  );
+  border-block-end: 1px solid var(--mui-palette-text-primary);
+}
+
+.fill {
+  height: 100%;
+  background-color: var(--mui-palette-primary-main);
+  opacity: 0.85;
+}
+
+.caption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--mui-spacing);
+  margin: calc(0.75 * var(--mui-spacing)) 0 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mui-palette-text-secondary);
+}

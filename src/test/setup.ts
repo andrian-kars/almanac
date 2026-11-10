@@ -20,4 +20,5 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  localStorage.clear();
 });

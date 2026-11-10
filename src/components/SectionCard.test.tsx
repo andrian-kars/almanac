@@ -11,6 +11,25 @@ describe('SectionCard', () => {
     expect(within(region).getByRole('heading', { level: 2, name: 'On This Day' })).toBeVisible();
   });
 
+  it('shows a subtitle and a header action in every state', () => {
+    const { rerender } = render(
+      <SectionCard title="Weather" subtitle="Fene, Galicia, Spain" action={<button>°C</button>}>
+        Sunny
+      </SectionCard>,
+    );
+    const region = screen.getByRole('region', { name: 'Weather' });
+    expect(within(region).getByText('Fene, Galicia, Spain')).toBeVisible();
+    expect(within(region).getByRole('button', { name: '°C' })).toBeVisible();
+
+    rerender(
+      <SectionCard title="Weather" subtitle="Fene" action={<button>°C</button>} isLoading>
+        Sunny
+      </SectionCard>,
+    );
+    expect(screen.getByText('Fene')).toBeVisible();
+    expect(screen.getByRole('button', { name: '°C' })).toBeVisible();
+  });
+
   it('shows its content when nothing else is going on', () => {
     render(<SectionCard title="Weather">Sunny</SectionCard>);
 

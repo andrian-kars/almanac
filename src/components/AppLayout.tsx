@@ -5,40 +5,67 @@ import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Link, NavLink, Outlet } from 'react-router';
+import { getYear, MIN_DATE } from '../lib/date';
 
-/** The shell around every page: top bar plus the routed page in a `main` landmark. */
+/**
+ * The shell around every page: a newspaper-style masthead (nameplate over a double rule)
+ * plus the routed page in a `main` landmark.
+ */
 export function AppLayout() {
   return (
     <>
-      <AppBar position="static">
+      <AppBar position="static" color="transparent" elevation={0}>
         <Container maxWidth="lg" disableGutters>
-          <Toolbar>
+          <Toolbar
+            disableGutters
+            sx={{
+              alignItems: 'baseline',
+              gap: 2,
+              py: 1.5,
+              mx: { xs: 2, sm: 3 },
+              borderBottom: '4px double',
+              borderColor: 'text.primary',
+            }}
+          >
             <Typography
-              variant="h6"
               component={Link}
               to="/"
-              sx={{ color: 'inherit', textDecoration: 'none' }}
+              sx={{
+                color: 'text.primary',
+                textDecoration: 'none',
+                fontFamily: 'var(--almanac-font-display)',
+                fontSize: { xs: '1.75rem', sm: '2.25rem' },
+                fontWeight: 700,
+                fontStyle: 'italic',
+                letterSpacing: '-0.03em',
+                lineHeight: 1,
+              }}
             >
               Almanac
+            </Typography>
+            <Typography
+              variant="overline"
+              sx={{
+                display: { xs: 'none', sm: 'block' },
+                color: 'text.secondary',
+                letterSpacing: '0.18em',
+                lineHeight: 1,
+              }}
+            >
+              Any day since {getYear(MIN_DATE)}
             </Typography>
             <Button
               component={NavLink}
               to="/bookmarks"
               color="inherit"
               startIcon={<BookmarksOutlinedIcon />}
-              sx={(theme) => {
-                const palette = (theme.vars ?? theme).palette;
-                return {
-                  marginInlineStart: 'auto',
-                  // NavLink sets aria-current on the active route. Built from theme
-                  // tokens so the highlight follows the color scheme.
-                  '&[aria-current="page"]': {
-                    bgcolor: theme.alpha(
-                      palette.primary.contrastText,
-                      palette.action.activatedOpacity,
-                    ),
-                  },
-                };
+              sx={{
+                marginInlineStart: 'auto',
+                alignSelf: 'center',
+                borderRadius: 0,
+                borderBottom: '2px solid transparent',
+                // NavLink sets aria-current on the active route.
+                '&[aria-current="page"]': { borderBottomColor: 'primary.main' },
               }}
             >
               Bookmarks

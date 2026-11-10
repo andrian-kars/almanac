@@ -1,6 +1,6 @@
 /*
- * The entry list in plain CSS. Colors, spacing and radius come from the MUI theme's CSS
- * variables, so this stays in step with the theme (including dark mode later).
+ * The entry list as a timeline, in plain CSS: years hang off a vertical rule, each with a
+ * marker. Colors, spacing and the display font come from the theme's CSS variables.
  */
 
 .list {
@@ -11,21 +11,54 @@
 
 .entry {
   display: grid;
-  grid-template-columns: 4.5rem 1fr auto;
-  gap: calc(1.5 * var(--mui-spacing));
-  align-items: start;
-  padding-block: calc(1.5 * var(--mui-spacing));
-  border-block-end: 1px solid var(--mui-palette-divider);
+  grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+  column-gap: calc(2.5 * var(--mui-spacing));
 }
 
-.entry:last-child {
-  border-block-end: none;
+/* Padding sits on the cells, not the row, so the rule runs unbroken from entry to entry. */
+.when,
+.body,
+.thumbnail {
+  margin-block: calc(1.75 * var(--mui-spacing));
+}
+
+.when {
+  position: relative;
+  align-self: stretch;
+  margin-block: 0;
+  padding-block: calc(1.75 * var(--mui-spacing));
+  padding-inline-end: calc(2.5 * var(--mui-spacing));
+  border-inline-end: 2px solid var(--mui-palette-divider);
+  text-align: end;
+}
+
+/* The marker on the rule, level with the year. */
+.when::after {
+  content: '';
+  position: absolute;
+  inset-block-start: calc(1.75 * var(--mui-spacing) + 0.5rem);
+  inset-inline-end: -0.4375rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid var(--mui-palette-primary-main);
+  border-radius: 50%;
+  background-color: var(--mui-palette-background-paper);
 }
 
 .year {
-  font-weight: 500;
+  display: block;
+  font-family: var(--almanac-font-display);
+  font-size: 1.375rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--mui-palette-primary-main);
+  line-height: 1.25;
+  color: var(--mui-palette-text-primary);
+}
+
+.distance {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--mui-palette-text-secondary);
 }
 
 .body {
@@ -35,6 +68,7 @@
 
 .text {
   margin: 0;
+  line-height: 1.55;
 }
 
 .link {
@@ -42,35 +76,103 @@
   margin-block-start: calc(0.5 * var(--mui-spacing));
   font-size: 0.875rem;
   color: var(--mui-palette-primary-main);
+  text-underline-offset: 0.2em;
 }
 
 .thumbnail {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 4rem;
+  height: 4rem;
   object-fit: cover;
+  border: 1px solid var(--mui-palette-divider);
   border-radius: var(--mui-shape-borderRadius);
   background-color: var(--mui-palette-action-hover);
 }
 
+/* An entry from the very year being viewed: tinted, with a filled marker and a label. */
+.pinned {
+  --tint: rgb(var(--mui-palette-primary-mainChannel) / 0.07);
+  background-color: var(--tint);
+  /* Widen the tint sideways without moving the content, so columns stay aligned. */
+  box-shadow:
+    0.75rem 0 0 var(--tint),
+    -0.75rem 0 0 var(--tint);
+}
+
+.pinned .when {
+  border-inline-end-color: var(--mui-palette-primary-main);
+}
+
+.pinned .when::after {
+  background-color: var(--mui-palette-primary-main);
+}
+
+.badge {
+  display: inline-block;
+  margin-block-start: calc(0.5 * var(--mui-spacing));
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--mui-shape-borderRadius);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--mui-palette-primary-contrastText);
+  background-color: var(--mui-palette-primary-main);
+}
+
 .count {
   margin-inline-start: calc(0.75 * var(--mui-spacing));
-  color: var(--mui-palette-text-secondary);
+  font-family: var(--almanac-font-body);
+  font-size: 0.8125rem;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
+  color: var(--mui-palette-text-secondary);
 }
 
 .footer {
   display: flex;
   justify-content: center;
-  padding-block-start: var(--mui-spacing);
+  padding-block-start: calc(2 * var(--mui-spacing));
 }
 
-/* On narrow phones the year sits above the text, giving the text the full width. */
+/*
+ * On phones the rule would eat too much width: the year moves above the text, on one line
+ * with its distance, and entries are separated by hairlines instead.
+ */
 @media (max-width: 599.95px) {
   .entry {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: calc(1.5 * var(--mui-spacing));
+    padding-block: calc(1.75 * var(--mui-spacing));
+    border-block-end: 1px solid var(--mui-palette-divider);
   }
 
-  .year {
+  .entry:last-child {
+    border-block-end: none;
+  }
+
+  .when {
     grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--mui-spacing);
+    padding: 0;
+    margin-block-end: calc(0.75 * var(--mui-spacing));
+    border-inline-end: none;
+    text-align: start;
+  }
+
+  .when::after {
+    display: none;
+  }
+
+  .body,
+  .thumbnail {
+    margin-block: 0;
+  }
+
+  .badge {
+    margin-block-start: 0;
   }
 }

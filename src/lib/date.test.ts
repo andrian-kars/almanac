@@ -6,6 +6,8 @@ import {
   formatLongDate,
   getAdjacentDays,
   getAllowedRange,
+  getDateParts,
+  getDayOfYear,
   getDisplayLocale,
   getMonthDay,
   isInRange,
@@ -134,6 +136,43 @@ describe('getMonthDay', () => {
     ['2024-02-29', { month: '02', day: '29' }],
   ])('%s → %o', (date, expected) => {
     expect(getMonthDay(iso(date))).toEqual(expected);
+  });
+});
+
+describe('getDayOfYear', () => {
+  it.each([
+    ['2024-01-01', { day: 1, total: 366, remaining: 365 }],
+    ['2024-05-01', { day: 122, total: 366, remaining: 244 }],
+    ['2024-12-31', { day: 366, total: 366, remaining: 0 }],
+    ['2023-12-31', { day: 365, total: 365, remaining: 0 }],
+    ['2023-03-01', { day: 60, total: 365, remaining: 305 }],
+    ['1900-12-31', { day: 365, total: 365, remaining: 0 }],
+    ['2000-12-31', { day: 366, total: 366, remaining: 0 }],
+  ])('%s → %o', (date, expected) => {
+    expect(getDayOfYear(iso(date))).toEqual(expected);
+  });
+});
+
+describe('getDateParts', () => {
+  it('splits a date into weekday, day and month with year, in the browser language', () => {
+    expect(getDateParts(iso('2024-05-01'))).toEqual({
+      weekday: 'Wednesday',
+      day: '1',
+      monthYear: 'May 2024',
+    });
+  });
+
+  it('follows another locale', () => {
+    expect(getDateParts(iso('2024-05-01'), 'es-ES')).toEqual({
+      weekday: 'miércoles',
+      day: '1',
+      monthYear: 'mayo de 2024',
+    });
+  });
+
+  it('never shifts the weekday, whatever the time zone', () => {
+    expect(getDateParts(iso('2026-11-10')).weekday).toBe('Tuesday');
+    expect(getDateParts(iso('1969-07-20')).weekday).toBe('Sunday');
   });
 });
 

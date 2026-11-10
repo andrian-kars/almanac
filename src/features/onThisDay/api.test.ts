@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ParseError } from '../../lib/http';
-import { fetchOnThisDay, formatYear, parseOnThisDay } from './api';
+import { describeYearDistance, fetchOnThisDay, formatYear, parseOnThisDay } from './api';
 import { rawEntry, rawFeed, rawPage } from './fixtures';
 
 describe('parseOnThisDay', () => {
@@ -175,6 +175,21 @@ describe('formatYear', () => {
     [-44, '44 BC'],
   ])('%d → %s', (year, expected) => {
     expect(formatYear(year)).toBe(expected);
+  });
+});
+
+describe('describeYearDistance', () => {
+  it.each([
+    [1931, 2024, '93 years earlier'],
+    [2023, 2024, '1 year earlier'],
+    [2024, 2024, null],
+    [2025, 2024, '1 year later'],
+    [2026, 1969, '57 years later'],
+    [418, 2024, '1,606 years earlier'],
+    // There is no year zero: 44 BC to AD 2024 is 2,067 years, not 2,068.
+    [-44, 2024, '2,067 years earlier'],
+  ])('entry in %d seen from %d → %s', (entryYear, viewedYear, expected) => {
+    expect(describeYearDistance(entryYear, viewedYear)).toBe(expected);
   });
 });
 

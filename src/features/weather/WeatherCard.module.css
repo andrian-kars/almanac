@@ -1,0 +1,151 @@
+/*
+ * The weather card's body in plain CSS, using the theme's CSS variables for color, spacing
+ * and fonts.
+ */
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: calc(1.5 * var(--mui-spacing));
+}
+
+.icon {
+  flex: none;
+  font-size: 2.75rem;
+  color: var(--mui-palette-primary-main);
+}
+
+.condition {
+  margin: 0;
+  font-family: var(--almanac-font-display);
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.kind {
+  display: inline-block;
+  margin-block-start: calc(0.5 * var(--mui-spacing));
+  padding: 0.1rem 0.45rem;
+  border: 1px solid currentColor;
+  border-radius: var(--mui-shape-borderRadius);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mui-palette-text-secondary);
+}
+
+.temperatures {
+  display: flex;
+  align-items: baseline;
+  gap: calc(3 * var(--mui-spacing));
+  margin-block: calc(2.5 * var(--mui-spacing));
+  margin-inline: 0;
+}
+
+.temperature {
+  display: flex;
+  flex-direction: column;
+}
+
+.temperatureLabel {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mui-palette-text-secondary);
+}
+
+.temperatureValue {
+  margin: 0;
+  font-family: var(--almanac-font-display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.high {
+  font-size: 3.5rem;
+  font-variation-settings: 'opsz' 144;
+}
+
+.low {
+  font-size: 2rem;
+  color: var(--mui-palette-text-secondary);
+}
+
+/* A small raised degree sign in the body face; the serif's own is oversized when large. */
+.degree {
+  margin-inline-start: 0.04em;
+  font-family: var(--almanac-font-body);
+  font-size: 0.42em;
+  font-weight: 400;
+  vertical-align: 0.95em;
+}
+
+/*
+ * Sunrise to sunset on a 24-hour ruler, ticked every six hours. Purely visual: the same
+ * times are listed below.
+ */
+.dayBar {
+  position: relative;
+  height: 0.625rem;
+  margin-block-end: calc(0.5 * var(--mui-spacing));
+  border-radius: 999px;
+  background-color: var(--mui-palette-secondary-main);
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(25% - 1px),
+    rgb(255 255 255 / 0.35) calc(25% - 1px),
+    rgb(255 255 255 / 0.35) 25%
+  );
+  overflow: hidden;
+}
+
+.daylight {
+  position: absolute;
+  inset-block: 0;
+  background: linear-gradient(
+    to right,
+    var(--mui-palette-warning-light),
+    var(--mui-palette-warning-main) 50%,
+    var(--mui-palette-warning-light)
+  );
+}
+
+.dayBarScale {
+  display: flex;
+  justify-content: space-between;
+  margin-block-end: calc(2 * var(--mui-spacing));
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--mui-palette-text-secondary);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: calc(1.5 * var(--mui-spacing)) calc(2 * var(--mui-spacing));
+  margin: 0;
+}
+
+.stat {
+  padding-block-start: var(--mui-spacing);
+  border-block-start: 1px solid var(--mui-palette-divider);
+}
+
+.stat dt {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mui-palette-text-secondary);
+}
+
+.stat dd {
+  margin: 0;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}

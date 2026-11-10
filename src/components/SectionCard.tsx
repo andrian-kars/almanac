@@ -8,6 +8,10 @@ import { type ReactNode, useId } from 'react';
 
 type SectionCardProps = {
   title: string;
+  /** A line under the title, e.g. the place the data is for. */
+  subtitle?: ReactNode;
+  /** Controls beside the title, e.g. a unit switch. Shown in every state. */
+  action?: ReactNode;
   children?: ReactNode;
   isLoading?: boolean;
   error?: { message: string; onRetry: () => void };
@@ -19,14 +23,46 @@ type SectionCardProps = {
  * The frame every data source sits in. It owns the shared states, in priority order:
  * loading → error (with Retry) → empty → content. One failing source never blanks the page.
  */
-export function SectionCard({ title, children, isLoading, error, emptyMessage }: SectionCardProps) {
+export function SectionCard({
+  title,
+  subtitle,
+  action,
+  children,
+  isLoading,
+  error,
+  emptyMessage,
+}: SectionCardProps) {
   const headingId = useId();
 
   return (
-    <Paper component="section" variant="outlined" aria-labelledby={headingId} sx={{ p: 2 }}>
-      <Typography id={headingId} variant="h6" component="h2" sx={{ mb: 1.5 }}>
-        {title}
-      </Typography>
+    <Paper
+      component="section"
+      variant="outlined"
+      aria-labelledby={headingId}
+      sx={{
+        p: { xs: 2, sm: 3 },
+        // A heavy top rule, like a section head in a printed almanac.
+        borderTop: '3px solid',
+        borderTopColor: 'text.primary',
+      }}
+    >
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{ alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}
+      >
+        <div>
+          <Typography id={headingId} variant="h5" component="h2">
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {subtitle}
+            </Typography>
+          )}
+        </div>
+        {action}
+      </Stack>
       <SectionBody title={title} isLoading={isLoading} error={error} emptyMessage={emptyMessage}>
         {children}
       </SectionBody>

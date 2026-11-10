@@ -7,6 +7,10 @@ import { rawBirths, rawEntry, rawFeed, rawPage } from './fixtures';
 
 const FEED_URL = 'feed/onthisday/all';
 
+/** Only the Wikipedia feed requests; the page makes others (e.g. weather) alongside. */
+const feedUrls = (fetchMock: ReturnType<typeof mockFetch>) =>
+  requestedUrls(fetchMock).filter((url) => url.includes(FEED_URL));
+
 const getCard = () => screen.getByRole('region', { name: 'On This Day' });
 const findEntries = () => within(getCard()).findAllByRole('listitem');
 const getEntries = () => within(getCard()).getAllByRole('listitem');
@@ -22,7 +26,7 @@ describe('loading the feed', () => {
     await renderApp('/day/2024-05-01');
     await findEntries();
 
-    expect(requestedUrls(fetchMock)).toEqual([
+    expect(feedUrls(fetchMock)).toEqual([
       'https://en.wikipedia.org/api/rest_v1/feed/onthisday/all/05/01',
     ]);
   });
@@ -87,6 +91,59 @@ describe('events', () => {
     expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
     // The BC entry has no linked article.
     expect(within(entries[3] as HTMLElement).queryByRole('link')).not.toBeInTheDocument();
+  });
+});
+
+describe('relation to the viewed date', () => {
+  beforeEach(() => {
+    mockFetch({ [FEED_URL]: { json: rawFeed() } });
+  });
+
+  it('says how far each entry is from the year being viewed', async () => {
+    await renderApp('/day/2024-05-01');
+    const entries = await findEntries();
+
+    expect(entries[0]).toHaveTextContent('13 years earlier');
+    expect(entries[1]).toHaveTextContent('93 years earlier');
+  });
+
+  it('counts forward for entries after the viewed year', async () => {
+    await renderApp('/day/1950-05-01');
+    const entries = await findEntries();
+
+    expect(entries[0]).toHaveTextContent('2011');
+    expect(entries[0]).toHaveTextContent('61 years later');
+  });
+
+  it('puts entries from the viewed year first and marks them', async () => {
+    // The fixture has births from 2000 down to 1989, newest first.
+    const { user } = await renderApp('/day/1995-05-01');
+    await user.click(await within(getCard()).findByRole('tab', { name: /Births/ }));
+    const entries = getEntries();
+
+    expect(entries[0]).toHaveTextContent('Person 1995');
+    expect(entries[0]).toHaveTextContent('On this very day');
+    // The rest keep their newest-first order.
+    expect(entries[1]).toHaveTextContent('Person 2000');
+    expect(entries[2]).toHaveTextContent('Person 1999');
+    expect(within(getCard()).getAllByText('On this very day')).toHaveLength(1);
+  });
+
+  it('marks nothing when no entry is from the viewed year', async () => {
+    await renderApp('/day/2024-05-01');
+    await findEntries();
+
+    expect(within(getCard()).queryByText('On this very day')).not.toBeInTheDocument();
+  });
+
+  it('keeps a pinned entry visible even when its year is far down the list', async () => {
+    mockFetch({ [FEED_URL]: { json: { births: rawBirths(35) } } });
+    const { user } = await renderApp('/day/1966-05-01');
+    await user.click(await within(getCard()).findByRole('tab', { name: /Births/ }));
+
+    // "Person 1966" is the last of 35 births, far beyond the first 10.
+    expect(getEntries()[0]).toHaveTextContent('Person 1966');
+    expect(getEntries()).toHaveLength(10);
   });
 });
 
@@ -189,7 +246,7 @@ describe('changing the date', () => {
     await waitFor(() => expect(getEntries()[0]).toHaveTextContent('Person 1980'));
     expect(getTab(/Births/)).toHaveAttribute('aria-selected', 'true');
     expect(getEntries()).toHaveLength(10);
-    expect(requestedUrls(fetchMock).at(-1)).toContain('all/05/02');
+    expect(feedUrls(fetchMock).at(-1)).toContain('all/05/02');
   });
 
   it('does not fetch a day again when coming back to it', async () => {
@@ -204,7 +261,7 @@ describe('changing the date', () => {
     await screen.findByRole('heading', { level: 1, name: 'May 1, 2024' });
     await findEntries();
 
-    expect(requestedUrls(fetchMock).filter((url) => url.endsWith('/05/01'))).toHaveLength(1);
+    expect(feedUrls(fetchMock).filter((url) => url.endsWith('/05/01'))).toHaveLength(1);
   });
 
   it('uses one request for the same day in different years', async () => {
@@ -216,7 +273,7 @@ describe('changing the date', () => {
     await screen.findByRole('heading', { level: 1, name: 'May 1, 1999' });
     await findEntries();
 
-    expect(requestedUrls(fetchMock)).toHaveLength(1);
+    expect(feedUrls(fetchMock)).toHaveLength(1);
   });
 });
 
@@ -251,7 +308,7 @@ describe('errors', () => {
 
     const alert = await within(getCard()).findByRole('alert');
     expect(alert).toHaveTextContent(/having problems/i);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(feedUrls(fetchMock)).toHaveLength(2);
 
     reply = { json: rawFeed() };
     await user.click(within(alert).getByRole('button', { name: 'Retry' }));
@@ -265,7 +322,7 @@ describe('errors', () => {
     await renderApp('/day/2024-05-01');
 
     expect(await within(getCard()).findByRole('alert')).toHaveTextContent(/nothing was found/i);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(feedUrls(fetchMock)).toHaveLength(1);
   });
 
   it('explains a network failure', async () => {

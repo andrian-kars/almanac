@@ -2,11 +2,11 @@ import Button from '@mui/material/Button';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
-import { useId, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { SectionCard } from '../../components/SectionCard';
-import { getMonthDay, type IsoDate } from '../../lib/date';
+import { getMonthDay, getYear, type IsoDate } from '../../lib/date';
 import { getErrorMessage } from '../../lib/http';
-import { formatYear, type OnThisDay, type OnThisDayEntry } from './api';
+import { describeYearDistance, formatYear, type OnThisDay, type OnThisDayEntry } from './api';
 import styles from './OnThisDayCard.module.css';
 import { useOnThisDay } from './useOnThisDay';
 
@@ -43,7 +43,15 @@ export function OnThisDayCard({ date }: { date: IsoDate }) {
       }
       emptyMessage={isEmpty ? 'Wikipedia has nothing recorded for this day.' : undefined}
     >
-      {data && <EntryTabs data={data} tab={tab} onTabChange={setTab} count={count} />}
+      {data && (
+        <EntryTabs
+          data={data}
+          tab={tab}
+          onTabChange={setTab}
+          count={count}
+          viewedYear={getYear(date)}
+        />
+      )}
     </SectionCard>
   );
 }
@@ -68,12 +76,21 @@ type EntryTabsProps = {
   tab: TabKey;
   onTabChange: (tab: TabKey) => void;
   count: ReturnType<typeof useVisibleCount>;
+  /** The year of the date being viewed; entries from that year lead the list. */
+  viewedYear: number;
 };
 
-function EntryTabs({ data, tab, onTabChange, count }: EntryTabsProps) {
+function EntryTabs({ data, tab, onTabChange, count, viewedYear }: EntryTabsProps) {
   const baseId = useId();
   const label = TABS.find(({ key }) => key === tab)?.label ?? '';
-  const entries = data[tab];
+  // What happened on this exact date comes first, wherever its year falls in the list.
+  const entries = useMemo(() => {
+    const all = data[tab];
+    return [
+      ...all.filter((entry) => entry.year === viewedYear),
+      ...all.filter((entry) => entry.year !== viewedYear),
+    ];
+  }, [data, tab, viewedYear]);
   const visible = entries.slice(0, count.value);
   const hidden = entries.length - visible.length;
 
@@ -109,14 +126,16 @@ function EntryTabs({ data, tab, onTabChange, count }: EntryTabsProps) {
         ) : (
           <ol className={styles.list}>
             {visible.map((entry) => (
-              <EntryItem key={entry.id} entry={entry} />
+              <EntryItem key={entry.id} entry={entry} viewedYear={viewedYear} />
             ))}
           </ol>
         )}
 
         {hidden > 0 && (
           <div className={styles.footer}>
-            <Button onClick={count.showMore}>Show more ({hidden} remaining)</Button>
+            <Button variant="outlined" onClick={count.showMore}>
+              Show more ({hidden} remaining)
+            </Button>
           </div>
         )}
       </div>
@@ -124,12 +143,20 @@ function EntryTabs({ data, tab, onTabChange, count }: EntryTabsProps) {
   );
 }
 
-function EntryItem({ entry }: { entry: OnThisDayEntry }) {
+function EntryItem({ entry, viewedYear }: { entry: OnThisDayEntry; viewedYear: number }) {
   const { page } = entry;
+  const distance = describeYearDistance(entry.year, viewedYear);
 
   return (
-    <li className={styles.entry}>
-      <span className={styles.year}>{formatYear(entry.year)}</span>
+    <li className={distance ? styles.entry : `${styles.entry} ${styles.pinned}`}>
+      <div className={styles.when}>
+        <span className={styles.year}>{formatYear(entry.year)}</span>
+        {distance ? (
+          <span className={styles.distance}>{distance}</span>
+        ) : (
+          <span className={styles.badge}>On this very day</span>
+        )}
+      </div>
       <div className={styles.body}>
         <p className={styles.text}>{entry.text}</p>
         {page && (

@@ -51,6 +51,20 @@ export function formatYear(year: number): string {
   return year < 0 ? `${-year} BC` : String(year);
 }
 
+const YEAR_COUNT_FORMAT = new Intl.NumberFormat('en-US');
+
+/**
+ * How far an entry's year is from the year being viewed: "93 years earlier", "1 year
+ * later", or null for the same year. Years are counted without a year zero.
+ */
+export function describeYearDistance(entryYear: number, viewedYear: number): string | null {
+  if (entryYear === viewedYear) return null;
+  const crossesEra = entryYear < 0 !== viewedYear < 0;
+  const years = Math.abs(viewedYear - entryYear) - (crossesEra ? 1 : 0);
+  const unit = years === 1 ? 'year' : 'years';
+  return `${YEAR_COUNT_FORMAT.format(years)} ${unit} ${entryYear < viewedYear ? 'earlier' : 'later'}`;
+}
+
 type UnknownRecord = Record<string, unknown>;
 
 const isRecord = (value: unknown): value is UnknownRecord =>

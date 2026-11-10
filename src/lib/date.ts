@@ -85,6 +85,39 @@ export function getAdjacentDays(
   };
 }
 
+/** The calendar year of a date, as a number. */
+export function getYear(date: IsoDate): number {
+  return Number(date.slice(0, 4));
+}
+
+/** Position of a date within its year: 1 May 2024 is day 122 of 366, with 244 to go. */
+export function getDayOfYear(date: IsoDate): { day: number; total: number; remaining: number } {
+  const year = getYear(date);
+  const startOfYear = Date.UTC(year, 0, 1);
+  const day = Math.round((toUtcDate(date).getTime() - startOfYear) / MS_PER_DAY) + 1;
+  const total = Math.round((Date.UTC(year + 1, 0, 1) - startOfYear) / MS_PER_DAY);
+  return { day, total, remaining: total - day };
+}
+
+/**
+ * The pieces of a date as a tear-off calendar shows them, in the user's language:
+ * "Wednesday", "1", "May 2024".
+ */
+export function getDateParts(
+  date: IsoDate,
+  locale: string = getDisplayLocale(),
+): { weekday: string; day: string; monthYear: string } {
+  const utc = toUtcDate(date);
+  const format = (options: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(utc);
+
+  return {
+    weekday: format({ weekday: 'long' }),
+    day: format({ day: 'numeric' }),
+    monthYear: format({ month: 'long', year: 'numeric' }),
+  };
+}
+
 /** Month and day as two-digit strings, for "on this day" style APIs. */
 export function getMonthDay(date: IsoDate): { month: string; day: string } {
   return { month: date.slice(5, 7), day: date.slice(8, 10) };

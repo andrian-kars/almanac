@@ -66,6 +66,40 @@ describe('routing', () => {
   });
 });
 
+describe('briefing date header', () => {
+  it('shows the weekday, day and month like a tear-off calendar page', async () => {
+    await renderApp('/day/2024-05-01');
+    const heading = await findPageHeading('May 1, 2024');
+
+    expect(within(heading).getByText('Wednesday')).toBeVisible();
+    expect(within(heading).getByText('1')).toBeVisible();
+    expect(within(heading).getByText('May 2024')).toBeVisible();
+  });
+
+  it('shows how far through the year the date is', async () => {
+    await renderApp('/day/2024-05-01');
+    await findPageHeading('May 1, 2024');
+
+    expect(screen.getByText('Day 122 of 366')).toBeVisible();
+    expect(screen.getByText('244 days left in 2024')).toBeVisible();
+  });
+
+  it('handles the last day of a year', async () => {
+    await renderApp('/day/2023-12-31');
+    await findPageHeading('December 31, 2023');
+
+    expect(screen.getByText('Day 365 of 365')).toBeVisible();
+    expect(screen.getByText('Last day of 2023')).toBeVisible();
+  });
+
+  it('uses the singular for one day left', async () => {
+    await renderApp('/day/2023-12-30');
+    await findPageHeading('December 30, 2023');
+
+    expect(screen.getByText('1 day left in 2023')).toBeVisible();
+  });
+});
+
 describe('briefing heading language', () => {
   it('is marked with the language the date is written in', async () => {
     await renderApp('/day/2024-05-01');
