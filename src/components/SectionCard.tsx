@@ -16,8 +16,8 @@ type SectionCardProps = {
   children?: ReactNode;
   isLoading?: boolean;
   error?: { message: string; onRetry: () => void };
-  /** When set, shown instead of the content: the source answered but has nothing. */
-  emptyMessage?: string;
+  /** When set, shown instead of the content: the source has nothing for this date. */
+  emptyMessage?: ReactNode;
 };
 
 /**

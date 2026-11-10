@@ -1,0 +1,100 @@
+/* The picture beside its story on wide screens, stacked on narrow ones. Plain CSS. */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: calc(2.5 * var(--mui-spacing));
+}
+
+.media {
+  min-width: 0;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  max-height: 26rem;
+  object-fit: cover;
+  border: 1px solid var(--mui-palette-divider);
+  border-radius: var(--mui-shape-borderRadius);
+  background-color: var(--mui-palette-action-hover);
+}
+
+/* A video is shown as its still frame with a play label; it opens on the video's own site. */
+.video {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 9rem;
+  overflow: hidden;
+  border: 1px solid var(--mui-palette-divider);
+  border-radius: var(--mui-shape-borderRadius);
+  color: var(--mui-palette-common-white);
+  text-decoration: none;
+  background-color: var(--mui-palette-secondary-main);
+}
+
+.video .image {
+  border: none;
+  border-radius: 0;
+}
+
+.play {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(0.5 * var(--mui-spacing));
+  padding: calc(0.75 * var(--mui-spacing)) calc(1.5 * var(--mui-spacing));
+  border-radius: 999px;
+  font-weight: 500;
+  background-color: rgb(0 0 0 / 0.65);
+}
+
+.title {
+  margin: 0 0 var(--mui-spacing);
+  font-family: var(--almanac-font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.explanation {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.clamped {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+}
+
+.credit {
+  margin: calc(1.5 * var(--mui-spacing)) 0 0;
+  font-size: 0.8125rem;
+  color: var(--mui-palette-text-secondary);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(0.5 * var(--mui-spacing)) calc(2.5 * var(--mui-spacing));
+  margin: calc(1.5 * var(--mui-spacing)) 0 0;
+  font-size: 0.875rem;
+}
+
+.links a,
+.inlineLink {
+  color: var(--mui-palette-primary-main);
+  text-underline-offset: 0.2em;
+}
+
+@media (min-width: 700px) {
+  .layout {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: start;
+  }
+}

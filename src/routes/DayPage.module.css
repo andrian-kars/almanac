@@ -67,6 +67,9 @@
 
 .main {
   grid-area: main;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: calc(3 * var(--mui-spacing));
   min-width: 0;
 }
 

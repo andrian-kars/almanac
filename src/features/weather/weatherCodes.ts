@@ -6,7 +6,7 @@ import GrainIcon from '@mui/icons-material/Grain';
 import SnowingIcon from '@mui/icons-material/Snowing';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
 import ThunderstormIcon from '@mui/icons-material/Thunderstorm';
-import UmbrellaIcon from '@mui/icons-material/Umbrella';
+import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import type { SvgIconComponent } from '@mui/icons-material';
 
@@ -25,18 +25,18 @@ const WEATHER_CODES: Record<number, WeatherDescription> = {
   55: { label: 'Heavy drizzle', Icon: GrainIcon },
   56: { label: 'Freezing drizzle', Icon: GrainIcon },
   57: { label: 'Heavy freezing drizzle', Icon: GrainIcon },
-  61: { label: 'Light rain', Icon: UmbrellaIcon },
-  63: { label: 'Rain', Icon: UmbrellaIcon },
-  65: { label: 'Heavy rain', Icon: UmbrellaIcon },
+  61: { label: 'Light rain', Icon: WaterDropIcon },
+  63: { label: 'Rain', Icon: WaterDropIcon },
+  65: { label: 'Heavy rain', Icon: WaterDropIcon },
   66: { label: 'Freezing rain', Icon: AcUnitIcon },
   67: { label: 'Heavy freezing rain', Icon: AcUnitIcon },
   71: { label: 'Light snow', Icon: AcUnitIcon },
   73: { label: 'Snow', Icon: AcUnitIcon },
   75: { label: 'Heavy snow', Icon: AcUnitIcon },
   77: { label: 'Snow grains', Icon: AcUnitIcon },
-  80: { label: 'Light rain showers', Icon: UmbrellaIcon },
-  81: { label: 'Rain showers', Icon: UmbrellaIcon },
-  82: { label: 'Violent rain showers', Icon: UmbrellaIcon },
+  80: { label: 'Light rain showers', Icon: WaterDropIcon },
+  81: { label: 'Rain showers', Icon: WaterDropIcon },
+  82: { label: 'Violent rain showers', Icon: WaterDropIcon },
   85: { label: 'Snow showers', Icon: SnowingIcon },
   86: { label: 'Heavy snow showers', Icon: SnowingIcon },
   95: { label: 'Thunderstorm', Icon: ThunderstormIcon },

@@ -57,6 +57,23 @@ export function todayIso(): IsoDate {
   return fromParts(now.getFullYear(), now.getMonth() + 1, now.getDate());
 }
 
+/**
+ * Today's date in a given IANA time zone, e.g. "America/New_York". For sources that publish
+ * on their own clock rather than the user's.
+ */
+export function todayInTimeZone(timeZone: string): IsoDate {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  }).formatToParts(new Date());
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((item) => item.type === type)?.value);
+
+  return fromParts(part('year'), part('month'), part('day'));
+}
+
 /** Moves `date` by a whole number of calendar days (negative goes back). */
 export function addDays(date: IsoDate, days: number): IsoDate {
   return fromUtcDate(new Date(toUtcDate(date).getTime() + days * MS_PER_DAY));

@@ -2,6 +2,7 @@ import { useParams } from 'react-router';
 import { DateNav } from '../components/DateNav';
 import { PageTitle } from '../components/PageTitle';
 import { YearProgress } from '../components/YearProgress';
+import { ApodCard } from '../features/apod/ApodCard';
 import { OnThisDayCard } from '../features/onThisDay/OnThisDayCard';
 import { WeatherCard } from '../features/weather/WeatherCard';
 import {
@@ -59,6 +60,7 @@ function DayBriefing({ date }: { date: IsoDate }) {
           <WeatherCard date={date} />
         </div>
         <div className={styles.main}>
+          <ApodCard date={date} />
           <OnThisDayCard date={date} />
         </div>
       </div>

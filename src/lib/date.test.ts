@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { freezeTime } from '../test/clock';
+import { freezeInstant, freezeTime } from '../test/clock';
 import {
   addDays,
   type DateRange,
@@ -14,6 +14,7 @@ import {
   type IsoDate,
   MIN_DATE,
   parseIsoDate,
+  todayInTimeZone,
   todayIso,
 } from './date';
 
@@ -65,6 +66,27 @@ describe('todayIso', () => {
     freezeTime(2026, 3, 7);
 
     expect(todayIso()).toBe('2026-03-07');
+  });
+});
+
+describe('todayInTimeZone', () => {
+  it.each([
+    // 03:00 UTC is the previous evening in New York and already the afternoon in Kiritimati.
+    ['America/New_York', '2026-11-10'],
+    ['UTC', '2026-11-11'],
+    ['Pacific/Kiritimati', '2026-11-11'],
+    ['Pacific/Pago_Pago', '2026-11-10'],
+  ])('gives the calendar date in %s', (timeZone, expected) => {
+    freezeInstant('2026-11-11T03:00:00Z');
+
+    expect(todayInTimeZone(timeZone)).toBe(expected);
+  });
+
+  it('follows daylight saving time', () => {
+    // 03:30 UTC in July is 23:30 the day before in New York (UTC-4).
+    freezeInstant('2026-07-04T03:30:00Z');
+
+    expect(todayInTimeZone('America/New_York')).toBe('2026-07-03');
   });
 });
 
