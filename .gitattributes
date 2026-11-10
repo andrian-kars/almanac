@@ -1,0 +1,8 @@
+# Keep LF in the working tree on every OS. Prettier enforces LF, and the Docker
+# build runs on Linux, so CRLF checkouts (core.autocrlf=true on Windows) would
+# fail `prettier --check` on every file.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary

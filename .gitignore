@@ -1,0 +1,25 @@
+# Dependencies and build output
+node_modules
+dist
+dist-ssr
+coverage
+*.tsbuildinfo
+.eslintcache
+
+# Environment (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Editor and OS files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.sw?
