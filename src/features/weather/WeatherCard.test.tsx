@@ -67,7 +67,9 @@ describe('what is shown', () => {
   it('names the place', async () => {
     await renderApp('/day/1969-07-20');
 
-    expect(await within(await findCard()).findByText('Fene, Galicia, Spain')).toBeVisible();
+    expect(await within(await findCard()).findByRole('combobox', { name: 'Location' })).toHaveValue(
+      'Fene, Galicia, Spain',
+    );
   });
 
   it('describes the conditions and the day’s high and low', async () => {

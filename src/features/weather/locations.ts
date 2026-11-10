@@ -1,3 +1,5 @@
+import { createStore } from '../../lib/storage';
+
 /** A place to show weather for. Coordinates from Open-Meteo geocoding. */
 export type Location = {
   id: string;
@@ -39,6 +41,28 @@ export const PRESET_LOCATIONS: readonly Location[] = [
 
 // The list is a non-empty literal above.
 export const DEFAULT_LOCATION = PRESET_LOCATIONS[0] as Location;
+
+const isText = (value: unknown): value is string => typeof value === 'string';
+const isWithin = (value: unknown, limit: number): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= limit;
+
+/** Validates a place read back from storage; anything incomplete or off the map is dropped. */
+export function parseStoredLocation(raw: unknown): Location | undefined {
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const { id, name, region, country, latitude, longitude } = raw as Record<string, unknown>;
+
+  if (!isText(id) || !isText(name) || name === '') return undefined;
+  if (!isText(region) || !isText(country)) return undefined;
+  if (!isWithin(latitude, 90) || !isWithin(longitude, 180)) return undefined;
+
+  return { id, name, region, country, latitude, longitude };
+}
+
+/** The place weather is shown for, remembered across visits. */
+export const locationStore = createStore<Location>('almanac.location.v1', {
+  parse: parseStoredLocation,
+  fallback: () => DEFAULT_LOCATION,
+});
 
 export function formatLocation({ name, region, country }: Location): string {
   return [name, region, country].filter(Boolean).join(', ');

@@ -29,3 +29,33 @@ export function rawWeatherImperial() {
     wind_speed_10m_max: [15.6],
   });
 }
+
+/** Test data shaped like an Open-Meteo geocoding response for "Paris". */
+export function rawGeocoding() {
+  return {
+    results: [
+      {
+        id: 2988507,
+        name: 'Paris',
+        latitude: 48.85341,
+        longitude: 2.3488,
+        country_code: 'FR',
+        country: 'France',
+        admin1: 'Île-de-France Region',
+        timezone: 'Europe/Paris',
+        population: 2138551,
+      },
+      {
+        id: 4717560,
+        name: 'Paris',
+        latitude: 33.66094,
+        longitude: -95.55551,
+        country_code: 'US',
+        country: 'United States',
+        admin1: 'Texas',
+        timezone: 'America/Chicago',
+      },
+    ],
+    generationtime_ms: 0.4,
+  };
+}

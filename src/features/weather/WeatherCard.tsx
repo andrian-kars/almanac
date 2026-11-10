@@ -5,7 +5,8 @@ import { getDisplayLocale, type IsoDate, todayIso } from '../../lib/date';
 import { getErrorMessage } from '../../lib/http';
 import { useStoredValue } from '../../lib/storage';
 import { type DailyWeather, formatClockTime, formatDuration, minutesOfDay } from './api';
-import { DEFAULT_LOCATION, formatLocation } from './locations';
+import { LocationPicker } from './LocationPicker';
+import { locationStore } from './locations';
 import { UNIT_LABELS, type UnitSystem, unitStore } from './units';
 import { useWeather } from './useWeather';
 import styles from './WeatherCard.module.css';
@@ -16,13 +17,13 @@ const MINUTES_PER_DAY = 24 * 60;
 /** The weather on `date` at the chosen place, past or forecast. */
 export function WeatherCard({ date }: { date: IsoDate }) {
   const units = useStoredValue(unitStore);
-  const location = DEFAULT_LOCATION;
+  const location = useStoredValue(locationStore);
   const query = useWeather(date, location, units);
 
   return (
     <SectionCard
       title="Weather"
-      subtitle={formatLocation(location)}
+      subtitle={<LocationPicker value={location} onChange={locationStore.set} />}
       action={<UnitToggle units={units} />}
       isLoading={query.isPending}
       error={
