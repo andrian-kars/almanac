@@ -66,7 +66,7 @@ export function DateJump({ date, range }: { date: IsoDate; range: DateRange }) {
           size: 'small',
           onKeyDown: handleKeyDown,
           onBlur: handleBlur,
-          sx: { flex: '1 1 10rem', minWidth: '10rem', maxWidth: '14rem' },
+          sx: { flex: '1 1 9rem', minWidth: '9rem', maxWidth: '14rem' },
         },
       }}
     />

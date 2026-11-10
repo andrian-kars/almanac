@@ -86,10 +86,24 @@ export function getAdjacentDays(
 }
 
 /**
+ * The locale dates are actually formatted in: the browser language if Intl supports it,
+ * otherwise whatever Intl falls back to. Used for the `lang` attribute of formatted dates,
+ * so screen readers pronounce them in the right language.
+ */
+export function getDisplayLocale(language: string = navigator.language): string {
+  try {
+    return new Intl.DateTimeFormat(language).resolvedOptions().locale;
+  } catch {
+    // Malformed tags make Intl throw a RangeError; never let that break a page.
+    return 'en-US';
+  }
+}
+
+/**
  * Formats a date for display in the user's language, e.g. "May 1, 2024" (en-US),
  * "1 May 2024" (en-GB) or "1 de mayo de 2024" (es).
  */
-export function formatLongDate(date: IsoDate, locale: string = navigator.language): string {
+export function formatLongDate(date: IsoDate, locale: string = getDisplayLocale()): string {
   // The Date is UTC midnight, so format it in UTC too or the day can shift.
   return new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
     toUtcDate(date),

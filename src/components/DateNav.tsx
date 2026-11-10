@@ -1,8 +1,12 @@
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
+import type { Theme } from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { getAdjacentDays, getAllowedRange, type IsoDate, todayIso } from '../lib/date';
@@ -36,6 +40,36 @@ function DayStepLink({
   );
 }
 
+/**
+ * Jump to today. On phone-width screens it shrinks to an icon (keeping "Today" as its
+ * accessible name), so it fits on one row with the arrows and the picker. The icon is a
+ * "reset" arrow, not a calendar, so it can't be confused with the picker's calendar button.
+ */
+function TodayButton({ today, isToday }: { today: IsoDate; isToday: boolean }) {
+  // noSsr reads the media query on the first render, so the button doesn't swap after mount.
+  const compact = useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'), { noSsr: true });
+  const target = isToday ? {} : { component: Link, to: `/day/${today}` };
+
+  if (compact) {
+    return (
+      <Tooltip title="Today">
+        {/* A disabled button fires no pointer events, so the tooltip needs a wrapper. */}
+        <span>
+          <IconButton aria-label="Today" disabled={isToday} {...target}>
+            <RestartAltIcon />
+          </IconButton>
+        </span>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Button variant="outlined" disabled={isToday} {...target}>
+      Today
+    </Button>
+  );
+}
+
 /** Previous day, date picker, next day and Today. Every control changes the URL. */
 export function DateNav({ date }: { date: IsoDate }) {
   const today = todayIso();
@@ -47,7 +81,7 @@ export function DateNav({ date }: { date: IsoDate }) {
       component="nav"
       aria-label="Date navigation"
       direction="row"
-      spacing={1}
+      spacing={{ xs: 0.5, sm: 1 }}
       useFlexGap
       sx={{ alignItems: 'center', flexWrap: 'wrap' }}
     >
@@ -58,15 +92,7 @@ export function DateNav({ date }: { date: IsoDate }) {
       <DayStepLink to={next} label="Next day">
         <ChevronRightIcon />
       </DayStepLink>
-      {date === today ? (
-        <Button variant="outlined" disabled>
-          Today
-        </Button>
-      ) : (
-        <Button component={Link} to={`/day/${today}`} variant="outlined">
-          Today
-        </Button>
-      )}
+      <TodayButton today={today} isToday={date === today} />
     </Stack>
   );
 }

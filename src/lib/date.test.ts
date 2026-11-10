@@ -6,6 +6,7 @@ import {
   formatLongDate,
   getAdjacentDays,
   getAllowedRange,
+  getDisplayLocale,
   isInRange,
   type IsoDate,
   MIN_DATE,
@@ -122,6 +123,18 @@ describe('getAdjacentDays', () => {
 
   it('has no next day on the last allowed date', () => {
     expect(getAdjacentDays(iso('2026-11-24'), range).next).toBeNull();
+  });
+});
+
+describe('getDisplayLocale', () => {
+  it('returns the browser language when Intl supports it', () => {
+    // The test setup pins navigator.language to en-US.
+    expect(getDisplayLocale()).toBe('en-US');
+    expect(getDisplayLocale('es-ES')).toBe('es-ES');
+  });
+
+  it('falls back to en-US for a malformed language tag instead of throwing', () => {
+    expect(getDisplayLocale('not a locale!')).toBe('en-US');
   });
 });
 

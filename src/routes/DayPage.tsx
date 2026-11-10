@@ -5,6 +5,7 @@ import { PageTitle } from '../components/PageTitle';
 import {
   formatLongDate,
   getAllowedRange,
+  getDisplayLocale,
   isInRange,
   type IsoDate,
   parseIsoDate,
@@ -28,13 +29,15 @@ export function DayPage() {
 }
 
 function DayBriefing({ date }: { date: IsoDate }) {
-  const title = formatLongDate(date);
+  const locale = getDisplayLocale();
+  const title = formatLongDate(date, locale);
 
   return (
     <>
       <PageTitle>{title}</PageTitle>
       <header className={styles.header}>
-        <Typography variant="h4" component="h1">
+        {/* The date may be in another language than the English UI around it. */}
+        <Typography variant="h4" component="h1" lang={locale}>
           {title}
         </Typography>
         <DateNav date={date} />

@@ -1,5 +1,5 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { freezeTime } from './test/clock';
 import { renderApp } from './test/renderApp';
 
@@ -11,20 +11,20 @@ beforeEach(() => {
 
 describe('routing', () => {
   it('redirects / to the briefing for today', async () => {
-    const { router } = renderApp('/');
+    const { router } = await renderApp('/');
 
     expect(await findPageHeading('November 10, 2026')).toBeVisible();
     expect(router.state.location.pathname).toBe('/day/2026-11-10');
   });
 
   it('shows the briefing for the date in the URL', async () => {
-    renderApp('/day/2024-05-01');
+    await renderApp('/day/2024-05-01');
 
     expect(await findPageHeading('May 1, 2024')).toBeVisible();
   });
 
   it('shows the bookmarks page at /bookmarks', async () => {
-    renderApp('/bookmarks');
+    await renderApp('/bookmarks');
 
     expect(await findPageHeading('Bookmarks')).toBeVisible();
   });
@@ -35,7 +35,7 @@ describe('routing', () => {
     ['a date before the weather archive starts', '1939-12-31'],
     ['a date past the forecast horizon', '2026-11-25'],
   ])('redirects %s to today', async (_label, date) => {
-    const { router } = renderApp(`/day/${date}`);
+    const { router } = await renderApp(`/day/${date}`);
 
     expect(await findPageHeading('November 10, 2026')).toBeVisible();
     expect(router.state.location.pathname).toBe('/day/2026-11-10');
@@ -45,36 +45,51 @@ describe('routing', () => {
     ['the first allowed date', '1940-01-01', 'January 1, 1940'],
     ['the last allowed date', '2026-11-24', 'November 24, 2026'],
   ])('accepts %s', async (_label, date, heading) => {
-    const { router } = renderApp(`/day/${date}`);
+    const { router } = await renderApp(`/day/${date}`);
 
     expect(await findPageHeading(heading)).toBeVisible();
     expect(router.state.location.pathname).toBe(`/day/${date}`);
   });
 
   it('replaces an invalid URL in history instead of adding an entry', async () => {
-    const { router } = renderApp('/day/banana');
+    const { router } = await renderApp('/day/banana');
 
     await findPageHeading('November 10, 2026');
     expect(router.state.historyAction).toBe('REPLACE');
   });
 
   it('redirects unknown paths to today', async () => {
-    const { router } = renderApp('/no/such/page');
+    const { router } = await renderApp('/no/such/page');
 
     expect(await findPageHeading('November 10, 2026')).toBeVisible();
     expect(router.state.location.pathname).toBe('/day/2026-11-10');
   });
 });
 
+describe('briefing heading language', () => {
+  it('is marked with the language the date is written in', async () => {
+    await renderApp('/day/2024-05-01');
+
+    expect(await findPageHeading('May 1, 2024')).toHaveAttribute('lang', 'en-US');
+  });
+
+  it('follows a Spanish browser, so screen readers pronounce it in Spanish', async () => {
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue('es-ES');
+    await renderApp('/day/2024-05-01');
+
+    expect(await findPageHeading('1 de mayo de 2024')).toHaveAttribute('lang', 'es-ES');
+  });
+});
+
 describe('document title', () => {
   it('names the date on the briefing page', async () => {
-    renderApp('/day/2024-05-01');
+    await renderApp('/day/2024-05-01');
 
     await waitFor(() => expect(document.title).toBe('May 1, 2024 · Almanac'));
   });
 
   it('names the bookmarks page', async () => {
-    renderApp('/bookmarks');
+    await renderApp('/bookmarks');
 
     await waitFor(() => expect(document.title).toBe('Bookmarks · Almanac'));
   });
@@ -82,7 +97,7 @@ describe('document title', () => {
 
 describe('app shell', () => {
   it('renders a top bar with the app name and the page content in a main landmark', async () => {
-    renderApp('/bookmarks');
+    await renderApp('/bookmarks');
 
     const banner = await screen.findByRole('banner');
     expect(within(banner).getByRole('link', { name: 'Almanac' })).toBeVisible();
@@ -92,7 +107,7 @@ describe('app shell', () => {
   });
 
   it('navigates to bookmarks from the top bar and marks the link as current', async () => {
-    const { router, user } = renderApp('/day/2024-05-01');
+    const { router, user } = await renderApp('/day/2024-05-01');
 
     const link = await screen.findByRole('link', { name: 'Bookmarks' });
     expect(link).not.toHaveAttribute('aria-current');
@@ -105,7 +120,7 @@ describe('app shell', () => {
   });
 
   it('returns to today when the app name is clicked', async () => {
-    const { router, user } = renderApp('/bookmarks');
+    const { router, user } = await renderApp('/bookmarks');
 
     await user.click(await screen.findByRole('link', { name: 'Almanac' }));
 

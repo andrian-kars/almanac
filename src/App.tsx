@@ -4,9 +4,9 @@ import { routes } from './router';
 
 const router = createBrowserRouter(routes);
 
-export default function App() {
+export default function App({ pickerLocale }: { pickerLocale: string }) {
   return (
-    <AppProviders>
+    <AppProviders pickerLocale={pickerLocale}>
       <RouterProvider router={router} />
     </AppProviders>
   );
