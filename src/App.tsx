@@ -1,3 +1,13 @@
+import { createBrowserRouter, RouterProvider } from 'react-router';
+import { AppProviders } from './AppProviders';
+import { routes } from './router';
+
+const router = createBrowserRouter(routes);
+
 export default function App() {
-  return <h1>Almanac</h1>;
+  return (
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>
+  );
 }
