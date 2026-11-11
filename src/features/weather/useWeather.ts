@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { type IsoDate, todayIso } from '../../lib/date';
 import { fetchWeather } from './api';
 import type { Location } from './locations';
-import type { UnitSystem } from './units';
+import type { UnitSystem } from '../../lib/regionalFormat';
 
 const FORECAST_STALE_MS = 30 * 60 * 1000;
 

@@ -1,5 +1,4 @@
 import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
@@ -50,21 +49,20 @@ export function SectionCard({
       <Stack
         direction="row"
         spacing={2}
-        sx={{ alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}
+        sx={{ alignItems: 'center', justifyContent: 'space-between', mb: subtitle ? 0.5 : 2 }}
       >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography id={headingId} variant="h5" component="h2">
-            {title}
-          </Typography>
-          {subtitle && (
-            // A div, not a paragraph: the subtitle may hold a control such as a picker.
-            <Typography variant="body2" component="div" color="text.secondary" sx={{ mt: 0.5 }}>
-              {subtitle}
-            </Typography>
-          )}
-        </Box>
+        <Typography id={headingId} variant="h5" component="h2" sx={{ flex: 1, minWidth: 0 }}>
+          {title}
+        </Typography>
         {action}
       </Stack>
+      {subtitle && (
+        // On its own row, so it has the card's full width however wide the action is.
+        // A div, not a paragraph: the subtitle may hold a control such as a picker.
+        <Typography variant="body2" component="div" color="text.secondary" sx={{ mb: 2 }}>
+          {subtitle}
+        </Typography>
+      )}
       <SectionBody title={title} isLoading={isLoading} error={error} emptyMessage={emptyMessage}>
         {children}
       </SectionBody>

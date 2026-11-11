@@ -135,7 +135,7 @@ describe('temperature units', () => {
     const card = await findCard();
 
     await expectHigh('75°');
-    expect(within(card).getByRole('button', { name: '°F' })).toHaveAttribute(
+    expect(within(card).getByRole('button', { name: /^°F/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -150,7 +150,7 @@ describe('temperature units', () => {
     const card = await findCard();
 
     await expectHigh('24°');
-    expect(within(card).getByRole('button', { name: '°C' })).toHaveAttribute(
+    expect(within(card).getByRole('button', { name: /^°C/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -162,7 +162,7 @@ describe('temperature units', () => {
     const card = await findCard();
     await expectHigh('75°');
 
-    await user.click(within(card).getByRole('button', { name: '°C' }));
+    await user.click(within(card).getByRole('button', { name: /^°C/ }));
 
     await expectHigh('24°');
     expect(weatherUrls(fetchMock).at(-1)?.searchParams.has('temperature_unit')).toBe(false);
@@ -184,9 +184,9 @@ describe('temperature units', () => {
     const card = await findCard();
     await expectHigh('75°');
 
-    await user.click(within(card).getByRole('button', { name: '°F' }));
+    await user.click(within(card).getByRole('button', { name: /^°F/ }));
 
-    expect(within(card).getByRole('button', { name: '°F' })).toHaveAttribute(
+    expect(within(card).getByRole('button', { name: /^°F/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -198,9 +198,9 @@ describe('temperature units', () => {
     const card = await findCard();
     await expectHigh('75°');
 
-    await user.click(within(card).getByRole('button', { name: '°C' }));
+    await user.click(within(card).getByRole('button', { name: /^°C/ }));
     await expectHigh('24°');
-    await user.click(within(getCard()).getByRole('button', { name: '°F' }));
+    await user.click(within(getCard()).getByRole('button', { name: /^°F/ }));
     await expectHigh('75°');
 
     expect(weatherUrls(fetchMock)).toHaveLength(2);

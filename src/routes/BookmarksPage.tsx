@@ -19,8 +19,9 @@ import {
 import { formatYear } from '../features/onThisDay/api';
 import { slugFromWikiUrl } from '../features/wikiSummary/api';
 import { ArticleLink } from '../features/wikiSummary/ArticleLink';
-import { formatLongDate, getDisplayLocale } from '../lib/date';
+import { formatLongDate } from '../lib/date';
 import { truncate } from '../lib/text';
+import { useDisplayLocale } from '../lib/useDisplayLocale';
 import styles from './BookmarksPage.module.css';
 
 type Filter = 'all' | BookmarkKind;
@@ -192,7 +193,7 @@ export function BookmarksPage() {
 }
 
 function BookmarkCard({ bookmark, onRemove }: { bookmark: Bookmark; onRemove: () => void }) {
-  const locale = getDisplayLocale();
+  const locale = useDisplayLocale();
   const titleId = useId();
   const isPicture = bookmark.kind === 'apod';
   // What the item is called in button and link names: the article or picture title.

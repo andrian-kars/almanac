@@ -4,7 +4,7 @@ import { ParseError } from '../../lib/http';
 import { buildWeatherUrl, formatClockTime, formatDuration, parseWeather } from './api';
 import { rawWeather } from './fixtures';
 import { DEFAULT_LOCATION, PRESET_LOCATIONS } from './locations';
-import { defaultUnitSystem } from './units';
+import { defaultUnitSystem } from '../../lib/regionalFormat';
 import { describeWeatherCode } from './weatherCodes';
 
 function iso(value: string): IsoDate {

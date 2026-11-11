@@ -1,3 +1,5 @@
+import { formatLanguage } from './regionalFormat';
+
 /**
  * Calendar-date helpers. A date is a plain `YYYY-MM-DD` string: no time, no time zone.
  * That is what the URL and every API use, and it sorts correctly as text.
@@ -141,11 +143,15 @@ export function getMonthDay(date: IsoDate): { month: string; day: string } {
 }
 
 /**
- * The locale dates are actually formatted in: the browser language if Intl supports it,
- * otherwise whatever Intl falls back to. Used for the `lang` attribute of formatted dates,
- * so screen readers pronounce them in the right language.
+ * The locale dates are actually formatted in: the language chosen for formats (the browser's
+ * own, unless the units and date format switch says otherwise; see regionalFormat.ts) if
+ * Intl supports it, otherwise whatever Intl falls back to. Also used for the `lang`
+ * attribute of formatted dates, so screen readers pronounce them in the right language.
+ *
+ * Components should use `useDisplayLocale`, which also re-renders them when the choice
+ * changes.
  */
-export function getDisplayLocale(language: string = navigator.language): string {
+export function getDisplayLocale(language: string = formatLanguage()): string {
   try {
     return new Intl.DateTimeFormat(language).resolvedOptions().locale;
   } catch {

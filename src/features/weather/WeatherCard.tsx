@@ -1,13 +1,15 @@
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { SectionCard } from '../../components/SectionCard';
-import { getDisplayLocale, type IsoDate, todayIso } from '../../lib/date';
+import { type IsoDate, todayIso } from '../../lib/date';
 import { getErrorMessage } from '../../lib/http';
+import { type UnitSystem, unitStore } from '../../lib/regionalFormat';
 import { useStoredValue } from '../../lib/storage';
+import { useDisplayLocale } from '../../lib/useDisplayLocale';
 import { type DailyWeather, formatClockTime, formatDuration, minutesOfDay } from './api';
 import { LocationPicker } from './LocationPicker';
 import { locationStore } from './locations';
-import { UNIT_LABELS, type UnitSystem, unitStore } from './units';
+import { UNIT_LABELS } from './units';
 import { useWeather } from './useWeather';
 import styles from './WeatherCard.module.css';
 import { describeWeatherCode } from './weatherCodes';
@@ -40,20 +42,27 @@ export function WeatherCard({ date }: { date: IsoDate }) {
   );
 }
 
+/**
+ * Chooses the units and, with them, how dates and times are written across the whole app
+ * (see lib/regionalFormat.ts).
+ */
 function UnitToggle({ units }: { units: UnitSystem }) {
   return (
     <ToggleButtonGroup
       size="small"
       exclusive
       value={units}
-      // Clicking the selected button reports null; a unit must always be selected.
+      // Clicking the selected button reports null; one side must always be selected.
       onChange={(_event, value: UnitSystem | null) => {
         if (value) unitStore.set(value);
       }}
-      aria-label="Temperature units"
+      aria-label="Units and date format"
     >
-      <ToggleButton value="metric">{UNIT_LABELS.metric.temperature}</ToggleButton>
-      <ToggleButton value="imperial">{UNIT_LABELS.imperial.temperature}</ToggleButton>
+      {(['metric', 'imperial'] as const).map((system) => (
+        <ToggleButton key={system} value={system} sx={{ textTransform: 'none' }}>
+          {UNIT_LABELS[system].temperature}
+        </ToggleButton>
+      ))}
     </ToggleButtonGroup>
   );
 }
@@ -61,7 +70,7 @@ function UnitToggle({ units }: { units: UnitSystem }) {
 type WeatherDetailsProps = { weather: DailyWeather; units: UnitSystem; isForecast: boolean };
 
 function WeatherDetails({ weather, units, isForecast }: WeatherDetailsProps) {
-  const locale = getDisplayLocale();
+  const locale = useDisplayLocale();
   const labels = UNIT_LABELS[units];
   const { label, Icon } = describeWeatherCode(weather.weatherCode);
 

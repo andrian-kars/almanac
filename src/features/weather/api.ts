@@ -1,7 +1,7 @@
 import { addDays, type IsoDate } from '../../lib/date';
 import { fetchJson, ParseError } from '../../lib/http';
 import type { Location } from './locations';
-import type { UnitSystem } from './units';
+import type { UnitSystem } from '../../lib/regionalFormat';
 
 /**
  * Open-Meteo daily weather for one place and date: historical reanalysis back to 1940, and

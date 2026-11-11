@@ -9,11 +9,11 @@ import {
   formatLongDate,
   getAllowedRange,
   getDateParts,
-  getDisplayLocale,
   isInRange,
   type IsoDate,
   parseIsoDate,
 } from '../lib/date';
+import { useDisplayLocale } from '../lib/useDisplayLocale';
 import styles from './DayPage.module.css';
 import { RedirectToToday } from './RedirectToToday';
 
@@ -33,7 +33,7 @@ export function DayPage() {
 }
 
 function DayBriefing({ date }: { date: IsoDate }) {
-  const locale = getDisplayLocale();
+  const locale = useDisplayLocale();
   const title = formatLongDate(date, locale);
   const { weekday, day, monthYear } = getDateParts(date, locale);
 

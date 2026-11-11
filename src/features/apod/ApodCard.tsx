@@ -14,6 +14,7 @@ import {
   isDemoKey,
 } from './api';
 import styles from './ApodCard.module.css';
+import { useDisplayLocale } from '../../lib/useDisplayLocale';
 import { apodBookmark } from './bookmark';
 import { useApod } from './useApod';
 
@@ -37,9 +38,10 @@ function describeEmpty(
   availability: ApodAvailability,
   apod: Apod | null | undefined,
   date: IsoDate,
+  locale: string,
 ): ReactNode {
   if (availability === 'before-archive') {
-    return `The Astronomy Picture of the Day archive begins on ${formatLongDate(APOD_FIRST_DATE)}.`;
+    return `The Astronomy Picture of the Day archive begins on ${formatLongDate(APOD_FIRST_DATE, locale)}.`;
   }
   if (availability === 'not-yet') return 'NASA has not published a picture for this date yet.';
   if (apod === null) {
@@ -58,6 +60,7 @@ function describeEmpty(
 /** NASA's Astronomy Picture of the Day for `date`. */
 export function ApodCard({ date }: { date: IsoDate }) {
   const { availability, query } = useApod(date);
+  const locale = useDisplayLocale();
 
   return (
     <SectionCard
@@ -69,7 +72,7 @@ export function ApodCard({ date }: { date: IsoDate }) {
           ? { message: describeError(query.error), onRetry: () => void query.refetch() }
           : undefined
       }
-      emptyMessage={describeEmpty(availability, query.data, date)}
+      emptyMessage={describeEmpty(availability, query.data, date, locale)}
     >
       {query.data && <ApodDetails apod={query.data} date={date} />}
     </SectionCard>
