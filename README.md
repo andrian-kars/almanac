@@ -6,6 +6,8 @@ picture and what happened in history, then save what you find.
 Built with React 19, TypeScript (strict), Vite, MUI 9, React Router and TanStack Query. There
 is no backend: the browser calls the public APIs directly.
 
+**Live:** <https://andrian-kars.com/almanac>
+
 ## Run it
 
 You need Docker or Podman.
@@ -101,8 +103,9 @@ else.
 - The NASA fallback reads a web page's markup, which can change. Tests use real samples, and
   a failure shows "no picture" rather than an error.
 
-**With more time** I would add end-to-end tests in a real browser and run them, with lint and
-the unit tests, in CI. Today those browser checks are scripted but run by hand. I would also
+**With more time** I would add end-to-end tests in a real browser and run them in CI, next to
+the lint and unit tests that already run before every deployment. Today those browser checks
+are scripted but run by hand. I would also
 load the date picker on demand (it is the largest file, 357 kB), translate the interface, and
 add a print stylesheet.
 
@@ -146,6 +149,20 @@ repairs the API, the app uses it again with no change.
   compose tool, and Docker Hub pulls then failed with a login error on my machine. Pulls
   from ECR Public work with both tools.
 
+### The live site
+
+Every push to `master` runs lint, the format check and the tests, then builds the site and
+publishes it to GitHub Pages (`.github/workflows/pages.yml`). My site, andrian-kars.com on
+Vercel, proxies `/almanac` to that build.
+
+- The site lives under `/almanac`, so the build is given that base path and the router reads
+  it. The container build stays at `/`.
+- The proxy sends every page address to the app and adds the same security headers as the
+  container. Pages alone can do neither, so on `andrian-kars.github.io/almanac/` the build's
+  `404.html` (a copy of the app) keeps shared links working, without the headers.
+- The live site uses NASA's shared `DEMO_KEY`. A key given to the build would end up in the
+  public JavaScript anyway.
+
 ### Accessibility
 
 Beyond the automated checks: a skip link, page changes announced to screen readers, focus
@@ -163,4 +180,5 @@ src/
   lib/            dates, HTTP, storage, formats
   test/           test helpers
 nginx/            server config and security headers for the container
+.github/workflows/  checks, build and deployment
 ```
