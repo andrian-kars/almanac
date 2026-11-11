@@ -1,0 +1,17 @@
+# Kept out of the image build: what the build recreates, what it does not need, and secrets.
+node_modules
+dist
+coverage
+*.tsbuildinfo
+.git
+.vscode
+.idea
+*.log
+
+# The NASA key reaches the build only as a build argument (see compose.yaml), never as a file.
+.env
+.env.*
+
+# Local notes that are not part of the project.
+PLAN.md
+Frontend Developer Assignment.md

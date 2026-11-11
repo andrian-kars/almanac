@@ -5,40 +5,9 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Almanac</title>
-    <!--
-      Light or dark is decided here, before the app's code loads, so the page never flashes
-      the wrong one. The storage key, the attribute and the two background colors mirror
-      src/lib/colorMode.ts and src/theme.ts; src/indexHtml.test.ts fails if they drift apart.
-
-      A classic script, not a module: modules run only after the page is parsed, too late to
-      prevent the flash. It is not compiled, but needs nothing the app itself does not.
-    -->
-    <script>
-      {
-        let mode = null;
-        try {
-          mode = localStorage.getItem('almanac.colorMode.v1');
-        } catch {
-          // Storage is blocked: follow the device.
-        }
-        const systemIsDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
-        const isDark = mode === 'dark' || (mode !== 'light' && systemIsDark);
-        const root = document.documentElement;
-        root.setAttribute('data-color-scheme', isDark ? 'dark' : 'light');
-
-        // Browsers leave backgrounds out of print, so light text would land on white paper:
-        // printing always uses the light scheme, then puts back whatever was showing.
-        let beforePrint = null;
-        window.addEventListener('beforeprint', () => {
-          beforePrint = root.getAttribute('data-color-scheme');
-          root.setAttribute('data-color-scheme', 'light');
-        });
-        window.addEventListener('afterprint', () => {
-          if (beforePrint) root.setAttribute('data-color-scheme', beforePrint);
-          beforePrint = null;
-        });
-      }
-    </script>
+    <!-- Picks light or dark before the page is drawn; see public/color-scheme.js. -->
+    <script src="/color-scheme.js"></script>
+    <!-- The two backgrounds mirror src/theme.ts; src/colorSchemeScript.test.ts checks them. -->
     <style>
       html {
         color-scheme: light;

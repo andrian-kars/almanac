@@ -1,15 +1,30 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import indexHtml from '../index.html?raw';
+import colorSchemeScript from '../public/color-scheme.js?raw';
 import { COLOR_MODE_STORAGE_KEY, COLOR_SCHEME_ATTRIBUTE } from './lib/colorMode';
 import { mockSystemColorScheme } from './test/systemColorScheme';
 import { theme } from './theme';
 
 /**
- * index.html sets the color scheme with a small inline script before the app's code loads,
- * so the page never flashes the wrong scheme. It cannot import from the app, so these tests
- * keep it in step with what the app uses.
+ * public/color-scheme.js sets the color scheme before the app's code loads, so the page
+ * never flashes the wrong scheme. It is served as it is, not built, so it cannot import from
+ * the app: these tests keep it in step with what the app uses.
  */
-const inlineScript = /<script>([\s\S]*?)<\/script>/.exec(indexHtml)?.[1] ?? '';
+const inlineScript = colorSchemeScript;
+
+describe('how index.html loads the script', () => {
+  const head = /<head>([\s\S]*)<\/head>/.exec(indexHtml)?.[1] ?? '';
+
+  it('runs it in the head, before the page is drawn', () => {
+    // A plain script tag blocks rendering until it has run; defer, async or a module would
+    // let the page paint first, in the wrong scheme.
+    expect(head).toContain('<script src="/color-scheme.js"></script>');
+  });
+
+  it('has no inline scripts, which the security policy would block', () => {
+    expect(indexHtml).not.toMatch(/<script(?![^>]*\bsrc=)[^>]*>/);
+  });
+});
 
 /**
  * Listeners the script adds to the window. A real page runs it once; tests run it many
@@ -34,13 +49,13 @@ afterEach(() => {
 
 function runInlineScript() {
   document.documentElement.removeAttribute(COLOR_SCHEME_ATTRIBUTE);
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval -- the app's own script, read from index.html, has to be run to be tested
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval -- the app's own script, read from public/, has to be run to be tested
   const run = new Function(inlineScript) as () => void;
   run();
   return document.documentElement.getAttribute(COLOR_SCHEME_ATTRIBUTE);
 }
 
-describe('the inline color scheme script', () => {
+describe('the color scheme script', () => {
   it('exists', () => {
     expect(inlineScript).not.toBe('');
   });

@@ -1,0 +1,18 @@
+# `docker compose up` (or `podman compose up`) builds the app and serves it at
+# http://localhost:8080. Another port: ALMANAC_PORT=3000 docker compose up
+services:
+  almanac:
+    build:
+      context: .
+      args:
+        # Optional: taken from .env next to this file. Without it, NASA's DEMO_KEY is used.
+        VITE_NASA_API_KEY: ${VITE_NASA_API_KEY:-}
+    ports:
+      - '${ALMANAC_PORT:-8080}:8080'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--spider', 'http://127.0.0.1:8080/']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

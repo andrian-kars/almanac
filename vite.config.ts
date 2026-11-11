@@ -24,6 +24,11 @@ const vendorChunks = [
 export default defineConfig({
   plugins: [react()],
   build: {
+    // Small files are normally written into the CSS or JS as data: addresses. Not fonts:
+    // browsers fetch each font file only when a page needs its characters, so inlining
+    // would make everyone download them, and the security policy allows fonts only from
+    // the site itself (nginx/security-headers.conf). Other files keep the default.
+    assetsInlineLimit: (file) => (/\.(woff2?|ttf|otf)$/.test(file) ? false : undefined),
     rolldownOptions: {
       output: {
         codeSplitting: {
