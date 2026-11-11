@@ -16,6 +16,6 @@ export function apodBookmark(apod: Apod, date: IsoDate): BookmarkDraft {
     subtitle: 'Astronomy Picture of the Day',
     description: apod.explanation ? truncate(apod.explanation, DESCRIPTION_LENGTH) : undefined,
     imageUrl: apod.mediaType === 'image' ? apod.url : apod.thumbnailUrl,
-    sourceUrl: apodPageUrl(date),
+    sourceUrl: apod.pageUrl ?? apodPageUrl(date),
   };
 }

@@ -1,0 +1,188 @@
+/*
+ * The whole bookmarks view is laid out and styled here, in plain CSS. Colors, spacing, radius
+ * and fonts come from the MUI theme's CSS variables, so the page follows the theme without
+ * using MUI's styling system. Only the interactive controls are MUI components.
+ */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--mui-spacing) calc(2 * var(--mui-spacing));
+  margin-block-end: calc(3 * var(--mui-spacing));
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--almanac-font-display);
+  font-size: clamp(2.25rem, 7vw, 3.25rem);
+  font-weight: 600;
+  font-variation-settings: 'opsz' 144;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.count {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mui-palette-text-secondary);
+}
+
+/* Five filters do not fit a narrow phone: they scroll sideways rather than wrap. */
+.filters {
+  margin-block-end: calc(3 * var(--mui-spacing));
+  overflow-x: auto;
+}
+
+.filterCount {
+  margin-inline-start: calc(0.75 * var(--mui-spacing));
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.list {
+  display: grid;
+  /* As many columns as fit; one column on phones without a media query. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+  gap: calc(2.5 * var(--mui-spacing));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  gap: calc(2 * var(--mui-spacing));
+  height: 100%;
+  padding: calc(2 * var(--mui-spacing));
+  border: 1px solid var(--mui-palette-divider);
+  border-block-start: 3px solid var(--mui-palette-text-primary);
+  border-radius: var(--mui-shape-borderRadius);
+  background-color: var(--mui-palette-background-paper);
+}
+
+.image {
+  flex: none;
+  width: 5.5rem;
+  height: 5.5rem;
+  object-fit: cover;
+  border: 1px solid var(--mui-palette-divider);
+  border-radius: var(--mui-shape-borderRadius);
+  background-color: var(--mui-palette-action-hover);
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0; /* lets long words wrap instead of widening the card */
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--mui-spacing);
+  margin: 0 0 calc(0.5 * var(--mui-spacing));
+}
+
+.kind {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mui-palette-primary-main);
+}
+
+.year {
+  font-family: var(--almanac-font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Event titles are whole sentences: a lighter weight and a line limit keep cards even. */
+.title {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--almanac-font-display);
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+.description {
+  display: -webkit-box;
+  margin: calc(0.75 * var(--mui-spacing)) 0 0;
+  overflow: hidden;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--mui-palette-text-secondary);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+/* Pushed to the bottom, so the action rows of neighbouring cards line up. */
+.footer {
+  margin-block-start: auto;
+  padding-block-start: calc(1.5 * var(--mui-spacing));
+}
+
+.saved {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--mui-palette-text-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(0.5 * var(--mui-spacing)) calc(2 * var(--mui-spacing));
+  margin-block-start: calc(0.5 * var(--mui-spacing));
+  font-size: 0.875rem;
+}
+
+.actions a {
+  color: var(--mui-palette-primary-main);
+  text-underline-offset: 0.2em;
+}
+
+/* Two classes, to outrank the margin reset in MUI's own button styles. */
+.actions .remove {
+  margin-inline-start: auto;
+}
+
+.empty {
+  padding: calc(6 * var(--mui-spacing)) calc(3 * var(--mui-spacing));
+  border: 1px dashed var(--mui-palette-divider);
+  border-radius: var(--mui-shape-borderRadius);
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0 0 var(--mui-spacing);
+  font-family: var(--almanac-font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.emptyText {
+  max-width: 28rem;
+  margin: 0 auto calc(3 * var(--mui-spacing));
+  color: var(--mui-palette-text-secondary);
+}
+
+/* The heading only takes focus from code (after the last removal), so no focus ring. */
+.heading:focus {
+  outline: none;
+}

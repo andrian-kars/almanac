@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { freezeTime } from '../../test/clock';
 import { mockFetch, type MockReply, requestedUrls } from '../../test/mockFetch';
@@ -351,6 +351,20 @@ describe('errors', () => {
 });
 
 describe('article thumbnails', () => {
+  it('disappear when they fail to load', async () => {
+    mockFetch({
+      [FEED_URL]: { json: { events: [rawEntry(1999, 'With picture.', [rawPage('Paris')])] } },
+    });
+    await renderApp('/day/2024-05-01');
+    const [entry] = await findEntries();
+    const image = entry?.querySelector('img');
+    if (!image) throw new Error('expected an image');
+
+    fireEvent.error(image);
+
+    expect(entry?.querySelector('img')).not.toBeInTheDocument();
+  });
+
   it('are decorative and load lazily', async () => {
     mockFetch({
       [FEED_URL]: { json: { events: [rawEntry(1999, 'With picture.', [rawPage('Paris')])] } },

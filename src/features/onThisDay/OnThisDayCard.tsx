@@ -3,6 +3,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useId, useMemo, useState } from 'react';
+import { DecorativeImage } from '../../components/DecorativeImage';
 import { SectionCard } from '../../components/SectionCard';
 import { getMonthDay, getYear, type IsoDate } from '../../lib/date';
 import { getErrorMessage } from '../../lib/http';
@@ -166,9 +167,9 @@ function EntryItem({ entry, date }: { entry: OnThisDayEntry; date: IsoDate }) {
           </a>
         )}
       </div>
+      {/* Decorative: the article is already named by the link next to it. */}
       {page?.thumbnailUrl && (
-        // Decorative: the article is already named by the link next to it.
-        <img className={styles.thumbnail} src={page.thumbnailUrl} alt="" loading="lazy" />
+        <DecorativeImage className={styles.thumbnail} src={page.thumbnailUrl} />
       )}
       <div className={styles.action}>
         <BookmarkButton bookmark={onThisDayBookmark(entry, date)} label={describeEntry(entry)} />

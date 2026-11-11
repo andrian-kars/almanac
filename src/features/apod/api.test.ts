@@ -1,8 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import { type IsoDate, parseIsoDate } from '../../lib/date';
-import { ParseError } from '../../lib/http';
-import { apodPageUrl, buildApodUrl, getApodApiKey, getApodAvailability, parseApod } from './api';
-import { rawApod, rawApodPlaceholder, rawApodVideo } from './fixtures';
+import { NetworkError, ParseError } from '../../lib/http';
+import { mockFetch, requestedUrls } from '../../test/mockFetch';
+import {
+  apodPageUrl,
+  buildApodUrl,
+  fetchApod,
+  getApodApiKey,
+  getApodAvailability,
+  parseApod,
+} from './api';
+import { rawApod, rawApodPlaceholder, rawApodVideo, rawNasaSciencePost } from './fixtures';
 
 function iso(value: string): IsoDate {
   const parsed = parseIsoDate(value);
@@ -71,6 +79,8 @@ describe('parseApod', () => {
       hdUrl: 'https://apod.nasa.gov/apod/image/2405/MarsHole_4096.jpg',
       thumbnailUrl: undefined,
       copyright: 'NASA, JPL, U. Arizona',
+      // The API gives no page address; the card builds one from the date.
+      pageUrl: undefined,
     });
   });
 
@@ -110,5 +120,78 @@ describe('parseApod', () => {
 
   it('drops a full-size link that is not a web address', () => {
     expect(parseApod(rawApod({ hdurl: 'javascript:alert(1)' }))?.hdUrl).toBeUndefined();
+  });
+});
+
+describe('fetchApod', () => {
+  const NASA_API = 'api.nasa.gov';
+  const NASA_SCIENCE = 'science.nasa.gov/wp-json';
+  const may1 = iso('2024-05-01');
+  const sources = (fetchMock: ReturnType<typeof mockFetch>) =>
+    requestedUrls(fetchMock).map((url) => new URL(url).hostname);
+
+  it('uses the APOD API when it has the picture', async () => {
+    const fetchMock = mockFetch({
+      [NASA_API]: { json: rawApod() },
+      [NASA_SCIENCE]: { json: [rawNasaSciencePost()] },
+    });
+
+    expect((await fetchApod(may1))?.url).toBe(
+      'https://apod.nasa.gov/apod/image/2405/MarsHole_1080.jpg',
+    );
+    expect(sources(fetchMock)).toEqual(['api.nasa.gov']);
+  });
+
+  it('looks the date up on science.nasa.gov when the API answers with its placeholder', async () => {
+    const fetchMock = mockFetch({
+      [NASA_API]: { json: rawApodPlaceholder() },
+      [NASA_SCIENCE]: { json: [rawNasaSciencePost()] },
+    });
+
+    expect(await fetchApod(may1)).toMatchObject({
+      title: 'A Hole in Mars',
+      pageUrl: 'https://science.nasa.gov/image-article/apod-2024-may-01-a-hole-in-mars/',
+    });
+    expect(sources(fetchMock)).toEqual(['api.nasa.gov', 'science.nasa.gov']);
+  });
+
+  it('returns null when neither source has the picture', async () => {
+    mockFetch({ [NASA_API]: { json: rawApodPlaceholder() }, [NASA_SCIENCE]: { json: [] } });
+
+    expect(await fetchApod(may1)).toBeNull();
+  });
+
+  it.each([429, 503])('falls back when the API fails with %i', async (status) => {
+    mockFetch({ [NASA_API]: { status }, [NASA_SCIENCE]: { json: [rawNasaSciencePost()] } });
+
+    expect((await fetchApod(may1))?.title).toBe('A Hole in Mars');
+  });
+
+  it('reports the API’s error when the fallback has nothing either', async () => {
+    mockFetch({ [NASA_API]: { status: 429 }, [NASA_SCIENCE]: { json: [] } });
+
+    await expect(fetchApod(may1)).rejects.toMatchObject({ status: 429 });
+  });
+
+  it('reports the API’s error when the fallback fails too', async () => {
+    mockFetch({ [NASA_API]: { status: 429 }, [NASA_SCIENCE]: { status: 500 } });
+
+    await expect(fetchApod(may1)).rejects.toMatchObject({ status: 429 });
+  });
+
+  it('reports the fallback’s error after a placeholder', async () => {
+    mockFetch({ [NASA_API]: { json: rawApodPlaceholder() }, [NASA_SCIENCE]: { status: 500 } });
+
+    await expect(fetchApod(may1)).rejects.toMatchObject({ status: 500 });
+  });
+
+  it('does not fall back when the network is down', async () => {
+    const fetchMock = mockFetch({
+      [NASA_API]: { error: new TypeError('Failed to fetch') },
+      [NASA_SCIENCE]: { json: [rawNasaSciencePost()] },
+    });
+
+    await expect(fetchApod(may1)).rejects.toBeInstanceOf(NetworkError);
+    expect(sources(fetchMock)).toEqual(['api.nasa.gov']);
   });
 });

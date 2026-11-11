@@ -124,6 +124,19 @@ export function removeBookmark(id: string): void {
   bookmarkStore.set(bookmarks.filter((bookmark) => bookmark.id !== id));
 }
 
+/**
+ * Puts back a bookmark that was just removed (Undo): same save time, same place in the list.
+ */
+export function restoreBookmark(bookmark: Bookmark): void {
+  const bookmarks = bookmarkStore.get();
+  if (isSaved(bookmarks, bookmark.id)) return;
+
+  // The list is newest first, so sorting by save time returns it to where it was.
+  bookmarkStore.set(
+    [...bookmarks, bookmark].sort((a, b) => Date.parse(b.savedAt) - Date.parse(a.savedAt)),
+  );
+}
+
 export function toggleBookmark(draft: BookmarkDraft): void {
   if (isSaved(bookmarkStore.get(), draft.id)) removeBookmark(draft.id);
   else addBookmark(draft);

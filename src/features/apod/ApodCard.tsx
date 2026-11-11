@@ -121,7 +121,7 @@ function ApodDetails({ apod, date }: { apod: Apod; date: IsoDate }) {
               Open full size
             </a>
           )}
-          <a href={apodPageUrl(date)} {...newTab}>
+          <a href={apod.pageUrl ?? apodPageUrl(date)} {...newTab}>
             View on NASA APOD
           </a>
         </p>

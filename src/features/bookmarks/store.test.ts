@@ -9,6 +9,7 @@ import {
   BOOKMARKS_STORAGE_KEY,
   parseBookmarks,
   removeBookmark,
+  restoreBookmark,
   toggleBookmark,
   useBookmarks,
   useIsBookmarked,
@@ -92,6 +93,40 @@ describe('adding and removing', () => {
 
     expect(() => addBookmark(draft())).not.toThrow();
     expect(bookmarkStore.get()).toHaveLength(1);
+  });
+});
+
+describe('restoring a removed bookmark', () => {
+  const at = (id: string, savedAt: string) => ({
+    year: undefined,
+    subtitle: undefined,
+    description: undefined,
+    imageUrl: undefined,
+    sourceUrl: undefined,
+    ...draft({ id }),
+    savedAt,
+  });
+
+  it('puts it back in its place by save time, keeping the original time', () => {
+    const [newest, middle, oldest] = [
+      at('newest', '2026-11-11T12:00:00.000Z'),
+      at('middle', '2026-11-11T11:00:00.000Z'),
+      at('oldest', '2026-11-11T10:00:00.000Z'),
+    ];
+    bookmarkStore.set([newest, oldest]);
+
+    restoreBookmark(middle);
+
+    expect(bookmarkStore.get()).toEqual([newest, middle, oldest]);
+  });
+
+  it('does nothing if it is already there', () => {
+    const bookmark = at('a', '2026-11-11T12:00:00.000Z');
+    bookmarkStore.set([bookmark]);
+
+    restoreBookmark({ ...bookmark, title: 'Changed' });
+
+    expect(bookmarkStore.get()).toEqual([bookmark]);
   });
 });
 

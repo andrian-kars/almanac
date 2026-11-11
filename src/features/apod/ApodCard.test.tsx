@@ -3,9 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { freezeInstant, freezeTime } from '../../test/clock';
 import { mockFetch, type MockReply, requestedUrls } from '../../test/mockFetch';
 import { renderApp } from '../../test/renderApp';
-import { rawApod, rawApodPlaceholder, rawApodVideo } from './fixtures';
+import { rawApod, rawApodPlaceholder, rawApodVideo, rawNasaSciencePost } from './fixtures';
 
 const NASA = 'api.nasa.gov';
+/** NASA's new APOD site, asked when the API has no picture. */
+const NASA_SCIENCE = 'science.nasa.gov/wp-json';
+const NOTHING_ON_NASA_SCIENCE = { [NASA_SCIENCE]: { json: [] } };
 
 const findCard = () => screen.findByRole('region', { name: 'Astronomy Picture of the Day' });
 const getCard = () => screen.getByRole('region', { name: 'Astronomy Picture of the Day' });
@@ -178,8 +181,8 @@ describe('dates without a picture', () => {
     expect(apodUrls(fetchMock)).toHaveLength(1);
   });
 
-  it('says so, with a link to NASA, when NASA returns its generic placeholder', async () => {
-    mockFetch({ [NASA]: { json: rawApodPlaceholder() } });
+  it('says so, with a link to NASA, when neither NASA source has the picture', async () => {
+    mockFetch({ [NASA]: { json: rawApodPlaceholder() }, ...NOTHING_ON_NASA_SCIENCE });
     await renderApp('/day/2024-05-01');
     const card = await findCard();
 
@@ -198,7 +201,7 @@ describe('dates without a picture', () => {
 describe('errors', () => {
   it('explains the shared demo key’s limit and how to fix it', async () => {
     vi.stubEnv('VITE_NASA_API_KEY', '');
-    const fetchMock = mockFetch({ [NASA]: { status: 429 } });
+    const fetchMock = mockFetch({ [NASA]: { status: 429 }, ...NOTHING_ON_NASA_SCIENCE });
     await renderApp('/day/2024-05-01');
 
     expect(await within(await findCard()).findByRole('alert')).toHaveTextContent(
@@ -210,7 +213,7 @@ describe('errors', () => {
   });
 
   it('gives the general rate-limit message for a personal key', async () => {
-    mockFetch({ [NASA]: { status: 429 } });
+    mockFetch({ [NASA]: { status: 429 }, ...NOTHING_ON_NASA_SCIENCE });
     await renderApp('/day/2024-05-01');
 
     const alert = await within(await findCard()).findByRole('alert');
@@ -220,7 +223,7 @@ describe('errors', () => {
 
   it('shows a server error with Retry, and recovers', async () => {
     let reply: MockReply = { status: 400 };
-    mockFetch({ [NASA]: () => reply });
+    mockFetch({ [NASA]: () => reply, ...NOTHING_ON_NASA_SCIENCE });
     const { user } = await renderApp('/day/2024-05-01');
 
     const alert = await within(await findCard()).findByRole('alert');
@@ -235,5 +238,55 @@ describe('errors', () => {
     await renderApp('/day/2024-05-01');
 
     expect(await within(await findCard()).findByRole('alert')).toHaveTextContent(/unexpected/i);
+  });
+});
+
+describe('when the APOD API has no picture', () => {
+  it('shows the picture from NASA’s APOD site instead', async () => {
+    mockFetch({
+      [NASA]: { json: rawApodPlaceholder() },
+      [NASA_SCIENCE]: { json: [rawNasaSciencePost()] },
+    });
+    await renderApp('/day/2024-05-01');
+    const card = await findCard();
+
+    expect(await within(card).findByRole('img', { name: 'A Hole in Mars' })).toHaveAttribute(
+      'src',
+      'https://assets.science.nasa.gov/content/dam/science/cds/apod/apod/2024/may/MarsHole_1080.jpg',
+    );
+    expect(within(card).getByText('Image credit: NASA, JPL, U. Arizona')).toBeVisible();
+    expect(within(card).queryByText('NASA Science')).not.toBeInTheDocument();
+  });
+
+  it('links to the picture’s own page on the new site', async () => {
+    mockFetch({
+      [NASA]: { json: rawApodPlaceholder() },
+      [NASA_SCIENCE]: { json: [rawNasaSciencePost()] },
+    });
+    await renderApp('/day/2024-05-01');
+    const card = await findCard();
+
+    expect(await within(card).findByRole('link', { name: /NASA APOD/ })).toHaveAttribute(
+      'href',
+      'https://science.nasa.gov/image-article/apod-2024-may-01-a-hole-in-mars/',
+    );
+  });
+
+  it('works without a key once the shared demo key is used up', async () => {
+    vi.stubEnv('VITE_NASA_API_KEY', '');
+    mockFetch({ [NASA]: { status: 429 }, [NASA_SCIENCE]: { json: [rawNasaSciencePost()] } });
+    await renderApp('/day/2024-05-01');
+
+    expect(
+      await within(await findCard()).findByRole('heading', { name: 'A Hole in Mars' }),
+    ).toBeVisible();
+  });
+
+  it('shows an error with Retry when the site cannot be reached', async () => {
+    mockFetch({ [NASA]: { json: rawApodPlaceholder() }, [NASA_SCIENCE]: { status: 500 } });
+    await renderApp('/day/2024-05-01');
+    const alert = await within(await findCard()).findByRole('alert');
+
+    expect(within(alert).getByRole('button', { name: 'Retry' })).toBeVisible();
   });
 });

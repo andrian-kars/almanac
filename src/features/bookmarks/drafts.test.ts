@@ -3,7 +3,8 @@ import { type IsoDate, parseIsoDate } from '../../lib/date';
 import { truncate } from '../../lib/text';
 import { parseApod } from '../apod/api';
 import { apodBookmark } from '../apod/bookmark';
-import { rawApod, rawApodVideo } from '../apod/fixtures';
+import { rawApod, rawApodVideo, rawNasaSciencePost } from '../apod/fixtures';
+import { parseNasaScience } from '../apod/nasaScience';
 import { parseOnThisDay } from '../onThisDay/api';
 import { onThisDayBookmark } from '../onThisDay/bookmark';
 import { rawFeed } from '../onThisDay/fixtures';
@@ -115,5 +116,14 @@ describe('apodBookmark', () => {
       imageUrl: 'https://img.youtube.com/vi/abc123/0.jpg',
       description: 'A short flight over the lunar surface.',
     });
+  });
+
+  it('links to the picture’s own page when the source gives one', () => {
+    const apod = parseNasaScience([rawNasaSciencePost()], iso('2024-05-01'));
+    if (!apod) throw new Error('fixture has no APOD post');
+
+    expect(apodBookmark(apod, iso('2024-05-01')).sourceUrl).toBe(
+      'https://science.nasa.gov/image-article/apod-2024-may-01-a-hole-in-mars/',
+    );
   });
 });

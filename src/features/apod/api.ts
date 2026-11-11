@@ -1,7 +1,11 @@
 import type { IsoDate } from '../../lib/date';
-import { fetchJson, ParseError } from '../../lib/http';
+import { fetchJson, HttpError, ParseError } from '../../lib/http';
+import { fetchNasaScienceApod } from './nasaScience';
 
-/** NASA Astronomy Picture of the Day. https://api.nasa.gov (APOD) */
+/**
+ * NASA Astronomy Picture of the Day, from the APOD API (https://api.nasa.gov), with NASA's
+ * new APOD site as a fallback (see nasaScience.ts).
+ */
 
 export type Apod = {
   title: string;
@@ -14,6 +18,8 @@ export type Apod = {
   /** Still frame for a video, when NASA provides one. */
   thumbnailUrl: string | undefined;
   copyright: string | undefined;
+  /** The picture's own page, when the source gives one; otherwise see apodPageUrl. */
+  pageUrl: string | undefined;
 };
 
 export type ApodAvailability = 'available' | 'before-archive' | 'not-yet';
@@ -56,8 +62,31 @@ export function apodPageUrl(date: IsoDate): string {
   return `https://apod.nasa.gov/apod/ap${year.slice(2)}${month}${day}.html`;
 }
 
+/**
+ * The picture for `date`, or null when NASA has none. The APOD API is asked first. When it
+ * has no picture (its placeholder) or refuses (rate limit, outage), NASA's APOD site is asked
+ * instead. If the site has nothing either, the API's error is the one reported, so the
+ * demo-key message still appears. A network failure or a malformed answer is not retried
+ * elsewhere: the second source would almost certainly fail the same way.
+ */
 export async function fetchApod(date: IsoDate, signal?: AbortSignal): Promise<Apod | null> {
-  return parseApod(await fetchJson(buildApodUrl(date, getApodApiKey()), { signal }));
+  let apiError: HttpError | undefined;
+  try {
+    const apod = parseApod(await fetchJson(buildApodUrl(date, getApodApiKey()), { signal }));
+    if (apod) return apod;
+  } catch (error) {
+    if (!(error instanceof HttpError)) throw error;
+    apiError = error;
+  }
+
+  let fallback: Apod | null;
+  try {
+    fallback = await fetchNasaScienceApod(date, signal);
+  } catch (error) {
+    throw apiError ?? error;
+  }
+  if (fallback || !apiError) return fallback;
+  throw apiError;
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -109,5 +138,6 @@ export function parseApod(payload: unknown): Apod | null {
     thumbnailUrl: asWebUrl(payload.thumbnail_url),
     // Credits arrive with stray line breaks.
     copyright: asText(payload.copyright)?.replace(/\s+/g, ' '),
+    pageUrl: undefined,
   };
 }
