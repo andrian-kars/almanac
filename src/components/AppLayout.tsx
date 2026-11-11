@@ -1,10 +1,13 @@
 import BookmarksOutlinedIcon from '@mui/icons-material/BookmarksOutlined';
 import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { useId } from 'react';
 import { Link, NavLink, Outlet } from 'react-router';
+import { useBookmarks } from '../features/bookmarks/store';
 import { getYear, MIN_DATE } from '../lib/date';
 
 /**
@@ -12,6 +15,9 @@ import { getYear, MIN_DATE } from '../lib/date';
  * plus the routed page in a `main` landmark.
  */
 export function AppLayout() {
+  const bookmarkCount = useBookmarks().length;
+  const countId = useId();
+
   return (
     <>
       <AppBar position="static" color="transparent" elevation={0}>
@@ -59,6 +65,8 @@ export function AppLayout() {
               to="/bookmarks"
               color="inherit"
               startIcon={<BookmarksOutlinedIcon />}
+              // The count is a description, so the link is still simply named "Bookmarks".
+              aria-describedby={bookmarkCount > 0 ? countId : undefined}
               sx={{
                 marginInlineStart: 'auto',
                 alignSelf: 'center',
@@ -69,7 +77,30 @@ export function AppLayout() {
               }}
             >
               Bookmarks
+              {bookmarkCount > 0 && (
+                <Box
+                  component="span"
+                  aria-hidden="true"
+                  sx={{
+                    ml: 1,
+                    px: 0.75,
+                    minWidth: '1.5rem',
+                    borderRadius: 999,
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                    fontSize: '0.75rem',
+                    lineHeight: '1.5rem',
+                    textAlign: 'center',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {bookmarkCount}
+                </Box>
+              )}
             </Button>
+            <span id={countId} hidden>
+              {bookmarkCount} saved
+            </span>
           </Toolbar>
         </Container>
       </AppBar>

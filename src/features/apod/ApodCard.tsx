@@ -4,6 +4,7 @@ import { type ReactNode, useId, useState } from 'react';
 import { SectionCard } from '../../components/SectionCard';
 import { formatLongDate, type IsoDate } from '../../lib/date';
 import { getErrorMessage, HttpError } from '../../lib/http';
+import { BookmarkButton } from '../bookmarks/BookmarkButton';
 import {
   type Apod,
   APOD_FIRST_DATE,
@@ -13,6 +14,7 @@ import {
   isDemoKey,
 } from './api';
 import styles from './ApodCard.module.css';
+import { apodBookmark } from './bookmark';
 import { useApod } from './useApod';
 
 /** Explanations longer than this start collapsed. */
@@ -84,7 +86,10 @@ function ApodDetails({ apod, date }: { apod: Apod; date: IsoDate }) {
     <div className={styles.layout}>
       <ApodMedia apod={apod} />
       <div>
-        <h3 className={styles.title}>{apod.title}</h3>
+        <div className={styles.heading}>
+          <h3 className={styles.title}>{apod.title}</h3>
+          <BookmarkButton bookmark={apodBookmark(apod, date)} label={apod.title} />
+        </div>
         <p
           id={explanationId}
           className={

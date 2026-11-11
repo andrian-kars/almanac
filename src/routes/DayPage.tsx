@@ -40,7 +40,7 @@ function DayBriefing({ date }: { date: IsoDate }) {
   return (
     <>
       <PageTitle>{title}</PageTitle>
-      <header className={styles.hero}>
+      <div className={styles.hero}>
         {/*
           Laid out like a tear-off calendar page. Screen readers get the date as one phrase
           from aria-label; `lang` because it may be in another language than the English UI.
@@ -54,7 +54,7 @@ function DayBriefing({ date }: { date: IsoDate }) {
         <div className={styles.progress}>
           <YearProgress date={date} />
         </div>
-      </header>
+      </div>
       <div className={styles.sections}>
         <div className={styles.sidebar}>
           <WeatherCard date={date} />

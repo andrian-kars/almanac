@@ -51,8 +51,16 @@
   background-color: rgb(0 0 0 / 0.65);
 }
 
+.heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mui-spacing);
+  margin-block-end: var(--mui-spacing);
+}
+
 .title {
-  margin: 0 0 var(--mui-spacing);
+  margin: 0;
   font-family: var(--almanac-font-display);
   font-size: 1.5rem;
   font-weight: 600;

@@ -6,7 +6,9 @@ import { useId, useMemo, useState } from 'react';
 import { SectionCard } from '../../components/SectionCard';
 import { getMonthDay, getYear, type IsoDate } from '../../lib/date';
 import { getErrorMessage } from '../../lib/http';
+import { BookmarkButton } from '../bookmarks/BookmarkButton';
 import { describeYearDistance, formatYear, type OnThisDay, type OnThisDayEntry } from './api';
+import { describeEntry, onThisDayBookmark } from './bookmark';
 import styles from './OnThisDayCard.module.css';
 import { useOnThisDay } from './useOnThisDay';
 
@@ -43,15 +45,7 @@ export function OnThisDayCard({ date }: { date: IsoDate }) {
       }
       emptyMessage={isEmpty ? 'Wikipedia has nothing recorded for this day.' : undefined}
     >
-      {data && (
-        <EntryTabs
-          data={data}
-          tab={tab}
-          onTabChange={setTab}
-          count={count}
-          viewedYear={getYear(date)}
-        />
-      )}
+      {data && <EntryTabs data={data} tab={tab} onTabChange={setTab} count={count} date={date} />}
     </SectionCard>
   );
 }
@@ -76,12 +70,13 @@ type EntryTabsProps = {
   tab: TabKey;
   onTabChange: (tab: TabKey) => void;
   count: ReturnType<typeof useVisibleCount>;
-  /** The year of the date being viewed; entries from that year lead the list. */
-  viewedYear: number;
+  /** The date being viewed; entries from its year lead the list. */
+  date: IsoDate;
 };
 
-function EntryTabs({ data, tab, onTabChange, count, viewedYear }: EntryTabsProps) {
+function EntryTabs({ data, tab, onTabChange, count, date }: EntryTabsProps) {
   const baseId = useId();
+  const viewedYear = getYear(date);
   const label = TABS.find(({ key }) => key === tab)?.label ?? '';
   // What happened on this exact date comes first, wherever its year falls in the list.
   const entries = useMemo(() => {
@@ -126,7 +121,7 @@ function EntryTabs({ data, tab, onTabChange, count, viewedYear }: EntryTabsProps
         ) : (
           <ol className={styles.list}>
             {visible.map((entry) => (
-              <EntryItem key={entry.id} entry={entry} viewedYear={viewedYear} />
+              <EntryItem key={entry.id} entry={entry} date={date} />
             ))}
           </ol>
         )}
@@ -143,9 +138,9 @@ function EntryTabs({ data, tab, onTabChange, count, viewedYear }: EntryTabsProps
   );
 }
 
-function EntryItem({ entry, viewedYear }: { entry: OnThisDayEntry; viewedYear: number }) {
+function EntryItem({ entry, date }: { entry: OnThisDayEntry; date: IsoDate }) {
   const { page } = entry;
-  const distance = describeYearDistance(entry.year, viewedYear);
+  const distance = describeYearDistance(entry.year, getYear(date));
 
   return (
     <li className={distance ? styles.entry : `${styles.entry} ${styles.pinned}`}>
@@ -175,6 +170,9 @@ function EntryItem({ entry, viewedYear }: { entry: OnThisDayEntry; viewedYear: n
         // Decorative: the article is already named by the link next to it.
         <img className={styles.thumbnail} src={page.thumbnailUrl} alt="" loading="lazy" />
       )}
+      <div className={styles.action}>
+        <BookmarkButton bookmark={onThisDayBookmark(entry, date)} label={describeEntry(entry)} />
+      </div>
     </li>
   );
 }
