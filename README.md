@@ -160,8 +160,8 @@ Vercel, proxies `/almanac` to that build.
 - The proxy sends every page address to the app and adds the same security headers as the
   container. Pages alone can do neither, so on `andrian-kars.github.io/almanac/` the build's
   `404.html` (a copy of the app) keeps shared links working, without the headers.
-- The live site uses NASA's shared `DEMO_KEY`. A key given to the build would end up in the
-  public JavaScript anyway.
+- The NASA key comes from the `VITE_NASA_API_KEY` repository secret. It still ends up in the
+  public JavaScript, like any key here; without the secret the build uses `DEMO_KEY`.
 
 ### Accessibility
 

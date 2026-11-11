@@ -35,8 +35,10 @@ jobs:
         uses: actions/configure-pages@v6
 
       # Pages serves the site from /<repository>/, not from the root.
-      # No NASA key is given, so the live site uses NASA's shared DEMO_KEY.
       - run: npm run build -- --base=${{ steps.pages.outputs.base_path }}/
+        env:
+          # A repository secret. It ends up in the public JavaScript, like any key here.
+          VITE_NASA_API_KEY: ${{ secrets.VITE_NASA_API_KEY }}
 
       # Pages has no rewrites: an address with no file behind it, like /day/2024-05-01,
       # gets 404.html. Making that the app lets shared links and reloads work.
