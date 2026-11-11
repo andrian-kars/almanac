@@ -54,7 +54,7 @@ export function WikiSummaryDialog() {
     const search = params.toString();
     void navigate(
       { pathname: location.pathname, search: search && `?${search}` },
-      { replace: true },
+      { replace: true, preventScrollReset: true },
     );
   };
 
@@ -94,7 +94,11 @@ export function WikiSummaryDialog() {
         </IconButton>
       </div>
 
-      <DialogContent dividers>
+      {/*
+        A region that can take focus: on a phone the text scrolls inside the dialog, and
+        keyboard users can only scroll what they can focus.
+      */}
+      <DialogContent dividers role="region" aria-label="Summary" tabIndex={0}>
         {query.isPending && <LoadingSummary />}
         {query.isError && (
           <Alert

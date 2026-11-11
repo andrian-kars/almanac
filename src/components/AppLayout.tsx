@@ -5,25 +5,28 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { useId } from 'react';
-import { Link, NavLink, Outlet } from 'react-router';
+import { type MouseEvent, useId } from 'react';
+import { Link, NavLink, Outlet, ScrollRestoration } from 'react-router';
 import { useBookmarks } from '../features/bookmarks/store';
 import { WikiSummaryDialog } from '../features/wikiSummary/WikiSummaryDialog';
 import { getYear, MIN_DATE } from '../lib/date';
+import { visuallyHidden } from '../lib/visuallyHidden';
 import { ColorModeToggle } from './ColorModeToggle';
+import { PageChangeAnnouncer } from './PageChangeAnnouncer';
 
 /** The narrowest phones (e.g. 320px wide) cannot fit the nameplate and a labelled link. */
 const NARROW_PHONE = '@media (max-width: 359.95px)';
 
-/** Off screen but still read by screen readers, so the link keeps its name. */
-const VISUALLY_HIDDEN = {
-  position: 'absolute',
-  width: '1px',
-  height: '1px',
-  overflow: 'hidden',
-  clipPath: 'inset(50%)',
-  whiteSpace: 'nowrap',
-} as const;
+const MAIN_ID = 'main';
+
+/**
+ * Jumps past the top bar. Focus is moved by hand: following "#main" would add a history
+ * entry and put the anchor in the address.
+ */
+function skipToContent(event: MouseEvent<HTMLAnchorElement>) {
+  event.preventDefault();
+  document.getElementById(MAIN_ID)?.focus();
+}
 
 /**
  * The shell around every page: a newspaper-style masthead (nameplate over a double rule)
@@ -35,6 +38,39 @@ export function AppLayout() {
 
   return (
     <>
+      {/*
+        A new page starts at the top and Back returns to where you were. Links that only
+        change the address's options (a filter, an open summary) opt out with
+        preventScrollReset, so the page stays put.
+      */}
+      <ScrollRestoration />
+      <PageChangeAnnouncer />
+      <Box
+        component="a"
+        href={`#${MAIN_ID}`}
+        onClick={skipToContent}
+        sx={{
+          ...visuallyHidden,
+          // Shown only while focused, over the top-left corner of the masthead.
+          '&:focus': {
+            clipPath: 'none',
+            width: 'auto',
+            height: 'auto',
+            margin: 0,
+            top: 8,
+            left: 8,
+            zIndex: 'tooltip',
+            px: 2,
+            py: 1,
+            borderRadius: 1,
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            fontWeight: 500,
+          },
+        }}
+      >
+        Skip to content
+      </Box>
       <AppBar position="static" color="transparent" elevation={0}>
         <Container maxWidth="lg" disableGutters>
           <Toolbar
@@ -91,7 +127,7 @@ export function AppLayout() {
                 '&[aria-current="page"]': { borderBottomColor: 'primary.main' },
               }}
             >
-              <Box component="span" sx={{ [NARROW_PHONE]: VISUALLY_HIDDEN }}>
+              <Box component="span" sx={{ [NARROW_PHONE]: visuallyHidden }}>
                 Bookmarks
               </Box>
               {bookmarkCount > 0 && (
@@ -122,7 +158,14 @@ export function AppLayout() {
           </Toolbar>
         </Container>
       </AppBar>
-      <Container component="main" maxWidth="lg" sx={{ py: 3 }}>
+      <Container
+        component="main"
+        id={MAIN_ID}
+        // Focusable from code only, as the skip link's target; it is not a control.
+        tabIndex={-1}
+        maxWidth="lg"
+        sx={{ py: 3, '&:focus': { outline: 'none' } }}
+      >
         <Outlet />
       </Container>
       {/* Opened from any page by a link that names an article in the address. */}

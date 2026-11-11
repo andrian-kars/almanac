@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import indexHtml from '../index.html?raw';
 import { COLOR_MODE_STORAGE_KEY, COLOR_SCHEME_ATTRIBUTE } from './lib/colorMode';
 import { mockSystemColorScheme } from './test/systemColorScheme';
@@ -10,6 +10,27 @@ import { theme } from './theme';
  * keep it in step with what the app uses.
  */
 const inlineScript = /<script>([\s\S]*?)<\/script>/.exec(indexHtml)?.[1] ?? '';
+
+/**
+ * Listeners the script adds to the window. A real page runs it once; tests run it many
+ * times, so each test removes what it added, or earlier runs would react to later events.
+ */
+const added: Array<[string, EventListenerOrEventListenerObject]> = [];
+const addListener = window.addEventListener.bind(window);
+
+beforeEach(() => {
+  vi.spyOn(window, 'addEventListener').mockImplementation(
+    (type: string, listener: EventListenerOrEventListenerObject | null) => {
+      if (!listener) return;
+      added.push([type, listener]);
+      addListener(type, listener);
+    },
+  );
+});
+
+afterEach(() => {
+  for (const [type, listener] of added.splice(0)) window.removeEventListener(type, listener);
+});
 
 function runInlineScript() {
   document.documentElement.removeAttribute(COLOR_SCHEME_ATTRIBUTE);
@@ -54,6 +75,34 @@ describe('the inline color scheme script', () => {
   it('does not break the page where the system preference cannot be read', () => {
     // jsdom has no matchMedia, like a very old browser.
     expect(runInlineScript()).toBe('light');
+  });
+});
+
+describe('printing', () => {
+  // Browsers leave page backgrounds out of print, so the night edition's light text would
+  // land on white paper. Printing always uses the day edition.
+  it('switches to the light scheme to print, and back afterwards', () => {
+    localStorage.setItem(COLOR_MODE_STORAGE_KEY, 'dark');
+    mockSystemColorScheme('light');
+    expect(runInlineScript()).toBe('dark');
+
+    window.dispatchEvent(new Event('beforeprint'));
+    expect(document.documentElement.getAttribute(COLOR_SCHEME_ATTRIBUTE)).toBe('light');
+
+    window.dispatchEvent(new Event('afterprint'));
+    expect(document.documentElement.getAttribute(COLOR_SCHEME_ATTRIBUTE)).toBe('dark');
+  });
+
+  it('restores whatever scheme was showing when printing started', () => {
+    mockSystemColorScheme('light');
+    runInlineScript();
+    // The user switched to dark after the page loaded.
+    document.documentElement.setAttribute(COLOR_SCHEME_ATTRIBUTE, 'dark');
+
+    window.dispatchEvent(new Event('beforeprint'));
+    window.dispatchEvent(new Event('afterprint'));
+
+    expect(document.documentElement.getAttribute(COLOR_SCHEME_ATTRIBUTE)).toBe('dark');
   });
 });
 

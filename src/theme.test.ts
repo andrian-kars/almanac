@@ -83,6 +83,17 @@ describe('raised surfaces in the night edition (dialogs, menus, the date picker)
   });
 });
 
+describe('motion', () => {
+  it('turns animations and transitions off for people who ask for reduced motion', () => {
+    const baseline = theme.components?.MuiCssBaseline?.styleOverrides;
+    const rules = JSON.stringify(baseline);
+
+    expect(rules).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(rules).toMatch(/"animationDuration":"0\.01ms !important"/);
+    expect(rules).toMatch(/"transitionDuration":"0\.01ms !important"/);
+  });
+});
+
 describe('switching schemes', () => {
   it('is driven by an attribute on the page, so it can be set before the app loads', () => {
     expect(theme.getColorSchemeSelector('dark')).toContain(`[${COLOR_SCHEME_ATTRIBUTE}="dark"]`);

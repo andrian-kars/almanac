@@ -115,6 +115,37 @@ export const theme = responsiveFontSizes(
             '--almanac-image-backdrop': PAPER,
           },
           body: { backgroundImage: 'var(--almanac-paper-grain)' },
+          // Page headings take focus from code after a navigation (see PageChangeAnnouncer).
+          // They are not controls, so they show no focus ring.
+          'main h1:focus': { outline: 'none' },
+          // People who ask their device for less motion get none: no fades, slides, pulsing
+          // placeholders or smooth scrolling.
+          '@media (prefers-reduced-motion: reduce)': {
+            '*, *::before, *::after': {
+              animationDuration: '0.01ms !important',
+              animationIterationCount: '1 !important',
+              transitionDuration: '0.01ms !important',
+              scrollBehavior: 'auto !important',
+            },
+          },
+        },
+      },
+      // MUI's info message is blue, which fits neither edition: it is set in ink on a
+      // faint tint instead, like a printed note.
+      MuiAlert: {
+        styleOverrides: {
+          root: {
+            variants: [
+              {
+                props: { variant: 'standard', severity: 'info' },
+                style: {
+                  color: 'var(--mui-palette-text-primary)',
+                  backgroundColor: 'var(--mui-palette-action-hover)',
+                  '& .MuiAlert-icon': { color: 'var(--mui-palette-text-secondary)' },
+                },
+              },
+            ],
+          },
         },
       },
       MuiTab: {

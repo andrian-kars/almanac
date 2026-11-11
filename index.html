@@ -9,20 +9,35 @@
       Light or dark is decided here, before the app's code loads, so the page never flashes
       the wrong one. The storage key, the attribute and the two background colors mirror
       src/lib/colorMode.ts and src/theme.ts; src/indexHtml.test.ts fails if they drift apart.
+
+      A classic script, not a module: modules run only after the page is parsed, too late to
+      prevent the flash. It is not compiled, but needs nothing the app itself does not.
     -->
     <script>
-      (function () {
-        var mode = null;
+      {
+        let mode = null;
         try {
           mode = localStorage.getItem('almanac.colorMode.v1');
-        } catch (error) {
+        } catch {
           // Storage is blocked: follow the device.
         }
-        var systemIsDark =
-          typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches;
-        var isDark = mode === 'dark' || (mode !== 'light' && systemIsDark);
-        document.documentElement.setAttribute('data-color-scheme', isDark ? 'dark' : 'light');
-      })();
+        const systemIsDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+        const isDark = mode === 'dark' || (mode !== 'light' && systemIsDark);
+        const root = document.documentElement;
+        root.setAttribute('data-color-scheme', isDark ? 'dark' : 'light');
+
+        // Browsers leave backgrounds out of print, so light text would land on white paper:
+        // printing always uses the light scheme, then puts back whatever was showing.
+        let beforePrint = null;
+        window.addEventListener('beforeprint', () => {
+          beforePrint = root.getAttribute('data-color-scheme');
+          root.setAttribute('data-color-scheme', 'light');
+        });
+        window.addEventListener('afterprint', () => {
+          if (beforePrint) root.setAttribute('data-color-scheme', beforePrint);
+          beforePrint = null;
+        });
+      }
     </script>
     <style>
       html {

@@ -100,6 +100,16 @@ describe('opening a summary', () => {
     expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
   });
 
+  it('lets keyboard users reach the text, so a long summary can be scrolled', async () => {
+    mockWikipedia();
+    await renderApp(`${DAY}?article=Ayrton_Senna`);
+    const dialog = await findDialog('Ayrton Senna');
+
+    const text = within(dialog).getByRole('region', { name: 'Summary' });
+    expect(text).toHaveAttribute('tabindex', '0');
+    expect(await within(text).findByText(/da Silva was a Brazilian racing driver/)).toBeVisible();
+  });
+
   it('credits Wikipedia for the text', async () => {
     mockWikipedia();
     const { user } = await renderApp(DAY);

@@ -89,7 +89,10 @@ export function BookmarksPage() {
 
   const changeFilter = (next: Filter) => {
     // Replaces the history entry: filtering is not a step the Back button should undo.
-    setSearchParams(next === 'all' ? {} : { [FILTER_PARAM]: next }, { replace: true });
+    setSearchParams(next === 'all' ? {} : { [FILTER_PARAM]: next }, {
+      replace: true,
+      preventScrollReset: true,
+    });
   };
 
   const remove = (bookmark: Bookmark, index: number) => {

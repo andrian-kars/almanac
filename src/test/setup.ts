@@ -15,6 +15,8 @@ beforeEach(() => {
     'fetch',
     vi.fn<typeof fetch>(() => new Promise<Response>(() => {})),
   );
+  // jsdom does not scroll (it logs "not implemented"); tests can still check the calls.
+  vi.stubGlobal('scrollTo', vi.fn());
 });
 
 afterEach(() => {

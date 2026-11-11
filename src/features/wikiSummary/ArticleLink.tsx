@@ -24,6 +24,8 @@ export function ArticleLink({ slug, children, ...linkProps }: ArticleLinkProps) 
       {...linkProps}
       to={{ pathname, search: `?${params.toString()}` }}
       state={OPENED_IN_APP}
+      // The dialog opens over the page, which stays where it was scrolled.
+      preventScrollReset
       aria-haspopup="dialog"
     >
       {children}
