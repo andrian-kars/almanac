@@ -1,0 +1,15 @@
+/*
+ * The backing behind a decorative picture. While it loads, a faint tint marks its place.
+ * Once loaded it gets the theme's image backdrop: almost nothing in the day edition, a sheet
+ * of paper in the night edition, where dark drawings on a transparent background (common on
+ * Wikipedia) would otherwise disappear. Photos cover it completely.
+ */
+.image {
+  background-color: var(--mui-palette-action-hover);
+}
+
+.image[data-loaded] {
+  background-color: var(--almanac-image-backdrop);
+  /* Not under the border, which would turn a hairline into a bright frame. */
+  background-clip: padding-box;
+}

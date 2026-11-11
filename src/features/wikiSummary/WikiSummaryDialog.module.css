@@ -21,7 +21,6 @@
   margin: 0 0 calc(1.5 * var(--mui-spacing)) calc(2.5 * var(--mui-spacing));
   border: 1px solid var(--mui-palette-divider);
   border-radius: var(--mui-shape-borderRadius);
-  background-color: var(--mui-palette-action-hover);
 }
 
 .description {

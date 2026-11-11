@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
+import { COLOR_SCHEME_ATTRIBUTE } from '../lib/colorMode';
 
 beforeEach(() => {
   // Pin the browser language so locale-aware formatting gives the same result on every
@@ -24,4 +25,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   localStorage.clear();
+  // The color scheme is set on the page itself, which outlives a test's rendered app.
+  document.documentElement.removeAttribute(COLOR_SCHEME_ATTRIBUTE);
 });

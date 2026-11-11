@@ -4,6 +4,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { type QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
+import { COLOR_MODE_STORAGE_KEY, colorModeStorage } from './lib/colorMode';
 import { createQueryClient } from './lib/queryClient';
 import { theme } from './theme';
 
@@ -22,8 +23,19 @@ export function AppProviders({ children, pickerLocale = 'en', queryClient }: App
 
   return (
     <QueryClientProvider client={client}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+      <ThemeProvider
+        theme={theme}
+        // Follows the device until the user chooses (see ColorModeToggle).
+        defaultMode="system"
+        modeStorageKey={COLOR_MODE_STORAGE_KEY}
+        storageManager={colorModeStorage}
+        // The app renders in the browser only, so the mode is known on the first render.
+        noSsr
+        // Switching recolors everything at once instead of fading piece by piece.
+        disableTransitionOnChange
+      >
+        {/* enableColorScheme: scrollbars and native controls follow the scheme too. */}
+        <CssBaseline enableColorScheme />
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={pickerLocale}>
           {children}
         </LocalizationProvider>

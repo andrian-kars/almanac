@@ -101,7 +101,6 @@
   object-fit: cover;
   border: 1px solid var(--mui-palette-divider);
   border-radius: var(--mui-shape-borderRadius);
-  background-color: var(--mui-palette-action-hover);
 }
 
 /* The bookmark button, pulled in towards the thumbnail beside it. */

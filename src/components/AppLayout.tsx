@@ -10,6 +10,20 @@ import { Link, NavLink, Outlet } from 'react-router';
 import { useBookmarks } from '../features/bookmarks/store';
 import { WikiSummaryDialog } from '../features/wikiSummary/WikiSummaryDialog';
 import { getYear, MIN_DATE } from '../lib/date';
+import { ColorModeToggle } from './ColorModeToggle';
+
+/** The narrowest phones (e.g. 320px wide) cannot fit the nameplate and a labelled link. */
+const NARROW_PHONE = '@media (max-width: 359.95px)';
+
+/** Off screen but still read by screen readers, so the link keeps its name. */
+const VISUALLY_HIDDEN = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  overflow: 'hidden',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
+} as const;
 
 /**
  * The shell around every page: a newspaper-style masthead (nameplate over a double rule)
@@ -27,7 +41,7 @@ export function AppLayout() {
             disableGutters
             sx={{
               alignItems: 'baseline',
-              gap: 2,
+              gap: { xs: 1, sm: 2 },
               py: 1.5,
               mx: { xs: 2, sm: 3 },
               borderBottom: '4px double',
@@ -77,7 +91,9 @@ export function AppLayout() {
                 '&[aria-current="page"]': { borderBottomColor: 'primary.main' },
               }}
             >
-              Bookmarks
+              <Box component="span" sx={{ [NARROW_PHONE]: VISUALLY_HIDDEN }}>
+                Bookmarks
+              </Box>
               {bookmarkCount > 0 && (
                 <Box
                   component="span"
@@ -102,6 +118,7 @@ export function AppLayout() {
             <span id={countId} hidden>
               {bookmarkCount} saved
             </span>
+            <ColorModeToggle />
           </Toolbar>
         </Container>
       </AppBar>

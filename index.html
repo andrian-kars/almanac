@@ -5,6 +5,35 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Almanac</title>
+    <!--
+      Light or dark is decided here, before the app's code loads, so the page never flashes
+      the wrong one. The storage key, the attribute and the two background colors mirror
+      src/lib/colorMode.ts and src/theme.ts; src/indexHtml.test.ts fails if they drift apart.
+    -->
+    <script>
+      (function () {
+        var mode = null;
+        try {
+          mode = localStorage.getItem('almanac.colorMode.v1');
+        } catch (error) {
+          // Storage is blocked: follow the device.
+        }
+        var systemIsDark =
+          typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches;
+        var isDark = mode === 'dark' || (mode !== 'light' && systemIsDark);
+        document.documentElement.setAttribute('data-color-scheme', isDark ? 'dark' : 'light');
+      })();
+    </script>
+    <style>
+      html {
+        color-scheme: light;
+        background-color: #f4eee1;
+      }
+      html[data-color-scheme='dark'] {
+        color-scheme: dark;
+        background-color: #16130f;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
