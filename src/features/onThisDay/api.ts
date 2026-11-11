@@ -1,4 +1,5 @@
 import { fetchJson, ParseError } from '../../lib/http';
+import { WIKIMEDIA_HEADERS, WIKIPEDIA_REST_URL, wikiArticleUrl } from '../../lib/wikipedia';
 
 /**
  * Wikipedia "On this day": events, births and deaths for a month and day.
@@ -8,6 +9,8 @@ import { fetchJson, ParseError } from '../../lib/http';
 export type EntryKind = 'event' | 'birth' | 'death';
 
 export type WikiPage = {
+  /** Canonical title, e.g. "Ayrton_Senna": names the article in ids and summary requests. */
+  slug: string;
   /** Display title, e.g. "Ayrton Senna". */
   title: string;
   description?: string;
@@ -22,18 +25,13 @@ export type OnThisDayEntry = {
   /** Negative for years before the common era. */
   year: number;
   text: string;
-  /** The first article the entry links to, if any. */
-  page: WikiPage | undefined;
+  /** The articles the entry links to, in the feed's order. The first is its main subject. */
+  pages: WikiPage[];
 };
 
 export type OnThisDay = Record<'events' | 'births' | 'deaths', OnThisDayEntry[]>;
 
-const FEED_URL = 'https://en.wikipedia.org/api/rest_v1/feed/onthisday/all';
-
-/** Wikimedia asks API clients to identify themselves; browsers forbid setting User-Agent. */
-export const WIKIMEDIA_HEADERS = {
-  'Api-User-Agent': 'Almanac/0.1 (https://github.com/andrian-kars/almanac)',
-};
+const FEED_URL = `${WIKIPEDIA_REST_URL}/feed/onthisday/all`;
 
 export async function fetchOnThisDay(
   { month, day }: { month: string; day: string },
@@ -84,8 +82,7 @@ function hash(text: string): string {
   return (value >>> 0).toString(36);
 }
 
-/** The article, plus its canonical title ("Ayrton_Senna"), which goes into entry ids. */
-function parsePage(raw: unknown): { slug: string; page: WikiPage } | undefined {
+function parsePage(raw: unknown): WikiPage | undefined {
   if (!isRecord(raw)) return undefined;
   const slug = asString(raw.title);
   if (!slug) return undefined;
@@ -96,18 +93,26 @@ function parsePage(raw: unknown): { slug: string; page: WikiPage } | undefined {
 
   return {
     slug,
-    page: {
-      title: asString(raw.normalizedtitle) ?? slug.replaceAll('_', ' '),
-      description: asString(raw.description),
-      thumbnailUrl: asString(thumbnail.source),
-      // Many feed pages omit content_urls; the canonical title always makes a valid link.
-      url: asString(desktop.page) ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(slug)}`,
-    },
+    title: asString(raw.normalizedtitle) ?? slug.replaceAll('_', ' '),
+    description: asString(raw.description),
+    thumbnailUrl: asString(thumbnail.source),
+    // Many feed pages omit content_urls; the canonical title always makes a valid link.
+    url: asString(desktop.page) ?? wikiArticleUrl(slug),
   };
 }
 
-/** A valid entry before ids are assigned, with the canonical titles of all its links. */
-type ParsedEntry = Omit<OnThisDayEntry, 'id'> & { slugs: string[] };
+/** The valid articles of an entry. The feed sometimes links one twice; it is kept once. */
+function parsePages(rawPages: unknown[]): WikiPage[] {
+  const pages = new Map<string, WikiPage>();
+  for (const raw of rawPages) {
+    const page = parsePage(raw);
+    if (page && !pages.has(page.slug)) pages.set(page.slug, page);
+  }
+  return [...pages.values()];
+}
+
+/** A valid entry before ids are assigned. */
+type ParsedEntry = Omit<OnThisDayEntry, 'id'>;
 
 function parseEntries(rawEntries: unknown[], kind: EntryKind): ParsedEntry[] {
   const entries: ParsedEntry[] = [];
@@ -123,14 +128,7 @@ function parseEntries(rawEntries: unknown[], kind: EntryKind): ParsedEntry[] {
     if (seen.has(duplicateKey)) continue;
     seen.add(duplicateKey);
 
-    const articles = asArray(raw.pages).flatMap((page) => parsePage(page) ?? []);
-    entries.push({
-      kind,
-      year,
-      text,
-      page: articles[0]?.page,
-      slugs: articles.map(({ slug }) => slug),
-    });
+    entries.push({ kind, year, text, pages: parsePages(asArray(raw.pages)) });
   }
 
   return entries;
@@ -144,17 +142,18 @@ function parseEntries(rawEntries: unknown[], kind: EntryKind): ParsedEntry[] {
 function isRetelling(curated: ParsedEntry, regular: ParsedEntry): boolean {
   if (curated.year !== regular.year) return false;
   if (curated.text === regular.text) return true;
-  const fewest = Math.min(curated.slugs.length, regular.slugs.length);
+  const fewest = Math.min(curated.pages.length, regular.pages.length);
   if (fewest === 0) return false;
-  const shared = regular.slugs.filter((slug) => curated.slugs.includes(slug)).length;
+  const curatedSlugs = new Set(curated.pages.map(({ slug }) => slug));
+  const shared = regular.pages.filter(({ slug }) => curatedSlugs.has(slug)).length;
   return shared / fewest >= 0.5;
 }
 
 /** Ids from kind, year and first article; text breaks ties, so they are unique and stable. */
 function withIds(entries: ParsedEntry[]): OnThisDayEntry[] {
   const ids = new Set<string>();
-  return entries.map(({ slugs, ...entry }) => {
-    const base = `${entry.kind}:${entry.year}:${slugs[0] ?? hash(entry.text)}`;
+  return entries.map((entry) => {
+    const base = `${entry.kind}:${entry.year}:${entry.pages[0]?.slug ?? hash(entry.text)}`;
     const id = ids.has(base) ? `${base}:${hash(entry.text)}` : base;
     ids.add(id);
     return { id, ...entry };

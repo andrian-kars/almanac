@@ -2,12 +2,13 @@ import Button from '@mui/material/Button';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
-import { useId, useMemo, useState } from 'react';
+import { Fragment, useId, useMemo, useState } from 'react';
 import { DecorativeImage } from '../../components/DecorativeImage';
 import { SectionCard } from '../../components/SectionCard';
 import { getMonthDay, getYear, type IsoDate } from '../../lib/date';
 import { getErrorMessage } from '../../lib/http';
 import { BookmarkButton } from '../bookmarks/BookmarkButton';
+import { ArticleLink } from '../wikiSummary/ArticleLink';
 import { describeYearDistance, formatYear, type OnThisDay, type OnThisDayEntry } from './api';
 import { describeEntry, onThisDayBookmark } from './bookmark';
 import styles from './OnThisDayCard.module.css';
@@ -140,7 +141,8 @@ function EntryTabs({ data, tab, onTabChange, count, date }: EntryTabsProps) {
 }
 
 function EntryItem({ entry, date }: { entry: OnThisDayEntry; date: IsoDate }) {
-  const { page } = entry;
+  // The entry's main subject; its picture illustrates the entry.
+  const page = entry.pages[0];
   const distance = describeYearDistance(entry.year, getYear(date));
 
   return (
@@ -155,19 +157,26 @@ function EntryItem({ entry, date }: { entry: OnThisDayEntry; date: IsoDate }) {
       </div>
       <div className={styles.body}>
         <p className={styles.text}>{entry.text}</p>
-        {page && (
-          <a
-            className={styles.link}
-            href={page.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${page.title} on Wikipedia`}
-          >
-            {page.title}
-          </a>
+        {entry.pages.length > 0 && (
+          // Every article the entry mentions; each opens its Wikipedia summary.
+          <p className={styles.links}>
+            {entry.pages.map(({ slug, title }, index) => (
+              <Fragment key={slug}>
+                {/* Outside the link, so it never becomes part of the link's name. */}
+                {index > 0 && (
+                  <span className={styles.separator} aria-hidden="true">
+                    ·
+                  </span>
+                )}
+                <ArticleLink slug={slug} className={styles.link}>
+                  {title}
+                </ArticleLink>
+              </Fragment>
+            ))}
+          </p>
         )}
       </div>
-      {/* Decorative: the article is already named by the link next to it. */}
+      {/* Decorative: the article is already named by the first link next to it. */}
       {page?.thumbnailUrl && (
         <DecorativeImage className={styles.thumbnail} src={page.thumbnailUrl} />
       )}

@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import { useId } from 'react';
 import { Link, NavLink, Outlet } from 'react-router';
 import { useBookmarks } from '../features/bookmarks/store';
+import { WikiSummaryDialog } from '../features/wikiSummary/WikiSummaryDialog';
 import { getYear, MIN_DATE } from '../lib/date';
 
 /**
@@ -107,6 +108,8 @@ export function AppLayout() {
       <Container component="main" maxWidth="lg" sx={{ py: 3 }}>
         <Outlet />
       </Container>
+      {/* Opened from any page by a link that names an article in the address. */}
+      <WikiSummaryDialog />
     </>
   );
 }

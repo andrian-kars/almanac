@@ -74,12 +74,24 @@
   line-height: 1.55;
 }
 
-.link {
-  display: inline-block;
-  margin-block-start: calc(0.5 * var(--mui-spacing));
+/* The articles an entry mentions, on one wrapping line with dots between them. */
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(0.25 * var(--mui-spacing)) 0;
+  margin: calc(0.5 * var(--mui-spacing)) 0 0;
   font-size: 0.875rem;
+}
+
+.link {
   color: var(--mui-palette-primary-main);
   text-underline-offset: 0.2em;
+}
+
+.separator {
+  width: 1.25em;
+  text-align: center;
+  color: var(--mui-palette-text-secondary);
 }
 
 .thumbnail {

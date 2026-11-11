@@ -17,6 +17,8 @@ import {
   useBookmarks,
 } from '../features/bookmarks/store';
 import { formatYear } from '../features/onThisDay/api';
+import { slugFromWikiUrl } from '../features/wikiSummary/api';
+import { ArticleLink } from '../features/wikiSummary/ArticleLink';
 import { formatLongDate, getDisplayLocale } from '../lib/date';
 import { truncate } from '../lib/text';
 import styles from './BookmarksPage.module.css';
@@ -54,7 +56,8 @@ type UndoNotice = { bookmark: Bookmark; open: boolean };
 
 /**
  * Saved discoveries: browse, filter by type, jump back to the day, remove with Undo.
- * Everything shown comes from the saved snapshots, so the page makes no network requests.
+ * Everything shown comes from the saved snapshots, so the page makes no network requests
+ * (until a Wikipedia summary is asked for).
  */
 export function BookmarksPage() {
   const bookmarks = useBookmarks();
@@ -192,6 +195,8 @@ function BookmarkCard({ bookmark, onRemove }: { bookmark: Bookmark; onRemove: ()
   // What the item is called in button and link names: the article or picture title.
   const name = isPicture ? bookmark.title : (bookmark.subtitle ?? truncate(bookmark.title, 60));
   const sourceName = isPicture ? 'NASA APOD' : 'Wikipedia';
+  // A saved Wikipedia article opens as a summary in the app, which links on to Wikipedia.
+  const articleSlug = isPicture ? null : slugFromWikiUrl(bookmark.sourceUrl);
   const savedOn = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(
     new Date(bookmark.savedAt),
   );
@@ -221,7 +226,12 @@ function BookmarkCard({ bookmark, onRemove }: { bookmark: Bookmark; onRemove: ()
             <Link to={`/day/${bookmark.date}`} aria-describedby={titleId}>
               Open {formatLongDate(bookmark.date, locale)}
             </Link>
-            {bookmark.sourceUrl && (
+            {articleSlug && (
+              <ArticleLink slug={articleSlug} aria-label={`Summary of ${name}`}>
+                Summary
+              </ArticleLink>
+            )}
+            {!articleSlug && bookmark.sourceUrl && (
               <a
                 href={bookmark.sourceUrl}
                 target="_blank"

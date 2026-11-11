@@ -79,18 +79,44 @@ describe('events', () => {
     expect(entries[2]?.querySelector('img')).not.toBeInTheDocument();
   });
 
-  it('links each entry to its Wikipedia article in a new tab', async () => {
+  it('names every article an entry links, each opening its summary', async () => {
     await renderApp('/day/2024-05-01');
     const entries = await findEntries();
 
-    const link = within(entries[1] as HTMLElement).getByRole('link', {
-      name: 'Empire State Building on Wikipedia',
-    });
-    expect(link).toHaveAttribute('href', 'https://en.wikipedia.org/wiki/Empire_State_Building');
-    expect(link).toHaveAttribute('target', '_blank');
-    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    const links = within(entries[1] as HTMLElement).getAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual([
+      'Empire State Building',
+      'New York City',
+    ]);
+    // In-app links: the summary dialog is driven by the address.
+    expect(links[0]).toHaveAttribute('href', '/day/2024-05-01?article=Empire_State_Building');
+    expect(links[1]).toHaveAttribute('href', '/day/2024-05-01?article=New_York_City');
+    expect(links[0]).toHaveAttribute('aria-haspopup', 'dialog');
     // The BC entry has no linked article.
     expect(within(entries[3] as HTMLElement).queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('separates article names with dots outside the links, hidden from screen readers', async () => {
+    await renderApp('/day/2024-05-01');
+    const entries = await findEntries();
+
+    const separators = within(entries[1] as HTMLElement).getAllByText('·');
+    // One between the two links, none after the last.
+    expect(separators).toHaveLength(1);
+    expect(separators[0]).toHaveAttribute('aria-hidden', 'true');
+    expect(separators[0]?.closest('a')).toBeNull();
+  });
+
+  it('names an article once even when the feed links it twice', async () => {
+    mockFetch({
+      [FEED_URL]: {
+        json: { events: [rawEntry(1900, 'Paris, twice.', [rawPage('Paris'), rawPage('Paris')])] },
+      },
+    });
+    await renderApp('/day/2024-05-01');
+    const entries = await findEntries();
+
+    expect(within(entries[0] as HTMLElement).getAllByRole('link')).toHaveLength(1);
   });
 });
 

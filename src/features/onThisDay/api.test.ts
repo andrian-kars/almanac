@@ -13,12 +13,15 @@ describe('parseOnThisDay', () => {
         kind: 'death',
         year: 1994,
         text: 'Ayrton Senna, Brazilian racing driver',
-        page: {
-          title: 'Ayrton Senna',
-          description: 'Brazilian racing driver (1960–1994)',
-          thumbnailUrl: 'https://upload.wikimedia.org/thumb/Ayrton_Senna.jpg',
-          url: 'https://en.wikipedia.org/wiki/Ayrton_Senna',
-        },
+        pages: [
+          {
+            slug: 'Ayrton_Senna',
+            title: 'Ayrton Senna',
+            description: 'Brazilian racing driver (1960–1994)',
+            thumbnailUrl: 'https://upload.wikimedia.org/thumb/Ayrton_Senna.jpg',
+            url: 'https://en.wikipedia.org/wiki/Ayrton_Senna',
+          },
+        ],
       },
     ]);
   });
@@ -38,21 +41,33 @@ describe('parseOnThisDay', () => {
     expect(births[11]).toMatchObject({ kind: 'birth', year: 1989 });
   });
 
-  it('uses the first linked article, and copes with entries that have none', () => {
+  it('keeps every linked article in order, and copes with entries that have none', () => {
     const { events } = parseOnThisDay(rawFeed());
 
-    expect(events[1]?.page?.title).toBe('Empire State Building');
-    expect(events[3]?.page).toBeUndefined();
+    expect(events[1]?.pages.map((page) => page.title)).toEqual([
+      'Empire State Building',
+      'New York City',
+    ]);
+    expect(events[3]?.pages).toEqual([]);
     expect(events[3]?.id).toMatch(/^event:-44:/);
+  });
+
+  it('lists an article once when an entry links it twice', () => {
+    const feed = { events: [rawEntry(1900, 'Paris.', [rawPage('Paris'), rawPage('Paris')])] };
+
+    expect(parseOnThisDay(feed).events[0]?.pages).toHaveLength(1);
   });
 
   it('leaves out the thumbnail when the article has none', () => {
     const { events } = parseOnThisDay(rawFeed());
 
-    expect(events[2]?.page).toEqual({
-      title: 'Acts of Union 1707',
-      url: 'https://en.wikipedia.org/wiki/Acts_of_Union_1707',
-    });
+    expect(events[2]?.pages).toEqual([
+      {
+        slug: 'Acts_of_Union_1707',
+        title: 'Acts of Union 1707',
+        url: 'https://en.wikipedia.org/wiki/Acts_of_Union_1707',
+      },
+    ]);
   });
 
   it('gives every entry a unique id, even when two share a year and article', () => {
@@ -154,7 +169,7 @@ describe('parseOnThisDay', () => {
     const feed = { births: [rawEntry(1950, 'Someone, a person', [{ nonsense: true }])] };
 
     expect(parseOnThisDay(feed).births).toEqual([
-      expect.objectContaining({ text: 'Someone, a person', page: undefined }),
+      expect.objectContaining({ text: 'Someone, a person', pages: [] }),
     ]);
   });
 

@@ -12,6 +12,8 @@ export function onThisDayBookmark(entry: OnThisDayEntry, date: IsoDate): Bookmar
   const { month, day } = getMonthDay(date);
   // entry.id is "<kind>:<year>:<article or hash>".
   const rest = entry.id.slice(entry.kind.length + 1);
+  // The entry's main subject illustrates and describes the bookmark.
+  const page = entry.pages[0];
 
   return {
     id: `${entry.kind}:${month}-${day}:${rest}`,
@@ -19,14 +21,14 @@ export function onThisDayBookmark(entry: OnThisDayEntry, date: IsoDate): Bookmar
     date,
     year: entry.year,
     title: entry.text,
-    subtitle: entry.page?.title,
-    description: entry.page?.description,
-    imageUrl: entry.page?.thumbnailUrl,
-    sourceUrl: entry.page?.url,
+    subtitle: page?.title,
+    description: page?.description,
+    imageUrl: page?.thumbnailUrl,
+    sourceUrl: page?.url,
   };
 }
 
 /** Names an entry for its bookmark button: "Empire State Building, 1931". */
 export function describeEntry(entry: OnThisDayEntry): string {
-  return `${entry.page?.title ?? truncate(entry.text, 60)}, ${formatYear(entry.year)}`;
+  return `${entry.pages[0]?.title ?? truncate(entry.text, 60)}, ${formatYear(entry.year)}`;
 }

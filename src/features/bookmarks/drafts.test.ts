@@ -55,7 +55,7 @@ describe('onThisDayBookmark', () => {
   });
 
   it('copes with an entry that links no article', () => {
-    const bare = feed.events.find((entry) => entry.page === undefined);
+    const bare = feed.events.find((entry) => entry.pages.length === 0);
     if (!bare) throw new Error('fixture has no bare event');
 
     expect(onThisDayBookmark(bare, iso('2024-05-01'))).toMatchObject({

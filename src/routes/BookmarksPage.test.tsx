@@ -176,20 +176,40 @@ describe('links', () => {
     ).toHaveAccessibleDescription('Edmund Hillary, New Zealand mountaineer');
   });
 
-  it('links to the source in a new tab, named by where it goes', async () => {
+  it('offers the Wikipedia summary of a saved article, opened in the app', async () => {
     await renderApp('/bookmarks');
     await findList();
 
-    const wikipedia = within(getCard('Ayrton Senna, Brazilian racing driver')).getByRole('link', {
-      name: 'Ayrton Senna on Wikipedia',
+    const summary = within(getCard('Ayrton Senna, Brazilian racing driver')).getByRole('link', {
+      name: 'Summary of Ayrton Senna',
     });
-    expect(wikipedia).toHaveAttribute('href', 'https://en.wikipedia.org/wiki/Ayrton_Senna');
-    expect(wikipedia).toHaveAttribute('target', '_blank');
-    expect(wikipedia).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    expect(summary).toHaveTextContent('Summary');
+    expect(summary).toHaveAttribute('href', '/bookmarks?article=Ayrton_Senna');
+    expect(summary).not.toHaveAttribute('target');
+  });
 
-    expect(
-      within(getCard('A Hole in Mars')).getByRole('link', { name: 'A Hole in Mars on NASA APOD' }),
-    ).toHaveAttribute('href', 'https://apod.nasa.gov/apod/ap240501.html');
+  it('links a saved picture to its source in a new tab, named by where it goes', async () => {
+    await renderApp('/bookmarks');
+    await findList();
+
+    const nasa = within(getCard('A Hole in Mars')).getByRole('link', {
+      name: 'A Hole in Mars on NASA APOD',
+    });
+    expect(nasa).toHaveAttribute('href', 'https://apod.nasa.gov/apod/ap240501.html');
+    expect(nasa).toHaveAttribute('target', '_blank');
+    expect(nasa).toHaveAttribute('rel', expect.stringContaining('noopener'));
+  });
+
+  it('links straight to the source when it is not an English Wikipedia article', async () => {
+    seedBookmarks([savedBookmark({ sourceUrl: 'https://de.wikipedia.org/wiki/Empire_State' })]);
+    await renderApp('/bookmarks');
+    await findList();
+
+    const source = within(getCards()[0] as HTMLElement).getByRole('link', {
+      name: 'Empire State Building on Wikipedia',
+    });
+    expect(source).toHaveAttribute('href', 'https://de.wikipedia.org/wiki/Empire_State');
+    expect(source).toHaveAttribute('target', '_blank');
   });
 
   it('has no source link when the bookmark has none', async () => {
